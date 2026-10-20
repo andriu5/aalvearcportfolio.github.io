@@ -1,0 +1,156 @@
+<!DOCTYPE HTML>
+<!--
+	Massively by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html lang="es">
+	<head>
+		<title>DegradIA: predicción de corrosión | Andrés Alvear</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<meta name="description" content="Caso de proyecto: DegradIA, plataforma en Go y Python que simula la corrosión del acero 347H en sales fundidas, validada contra SEM-EDS y en uso en el CDEA." />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			@media screen and (max-width: 736px) {
+				table.resumen td { display: block; padding-top: 0.25em; padding-bottom: 0.25em; }
+				table.resumen td:first-child { padding-top: 0.9em; }
+				table.resumen td:last-child { padding-bottom: 0.9em; }
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<a href="index.html" class="logo">Andrés Alvear's Portfolio</a>
+					</header>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul class="links">
+							<li><a href="index.html">Projects</a></li>
+							<li><a href="caso-mini.html">MINI</a></li>
+							<li><a href="caso-fmeco.html">Formality ECO</a></li>
+							<li class="active"><a href="caso-degradia.html">DegradIA</a></li>
+						</ul>
+						<ul class="icons">
+							<li><a href="https://www.linkedin.com/in/andres-alvear-028bb01ba/" class="icon brands alt fa-linkedin"><span class="label">Linkedin</span></a></li>
+							<li><a href="https://github.com/andriu5" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Post -->
+							<section class="post">
+								<header class="major">
+									<span class="date">2025 · U. de Antofagasta, proyecto ANID VIU 24P0174</span>
+									<h1>DegradIA: predicción<br />
+									de corrosión</h1>
+									<p>Una plataforma que simula la corrosión del acero en sales fundidas para plantas solares.<br />
+									Pasó de meses de laboratorio a horas de simulación, y hoy la usa un laboratorio de investigación.</p>
+								</header>
+
+								<a href="images/caso_degradia_arquitectura.svg" class="image main"><img src="images/caso_degradia_arquitectura.svg" alt="Diagrama: del modelo publicado al prototipo en Python, el motor concurrente en Go, la API, la visualización web y la validación contra SEM-EDS" /></a>
+
+								<h2>En resumen</h2>
+								<div class="table-wrapper">
+									<table class="resumen">
+										<tbody>
+											<tr><td><b>Desafío</b></td><td>Reemplazar campañas experimentales de meses por una predicción confiable de la corrosión del acero 347H en sales fundidas.</td></tr>
+											<tr><td><b>Enfoque</b></td><td>Implementar el autómata celular del investigador principal, validarlo contra SEM-EDS y pasar el motor de Python a Go cuando el rendimiento y la concurrencia se volvieron el límite.</td></tr>
+											<tr><td><b>Mi contribución</b></td><td>Implementación del algoritmo, arquitectura y desarrollo del software (motor, API y visualización web) y pipeline de validación.</td></tr>
+											<tr><td><b>Resultados</b></td><td>ECM ≈ 2 % frente a SEM-EDS y R² = 0,97; de meses a horas; TRL 6 y patente en trámite; en uso en el CDEA y origen de Novatherm Analytics.</td></tr>
+											<tr><td><b>Competencias</b></td><td>Arquitectura de software, Go concurrente y Python, optimización de rendimiento, validación de modelos, llevar investigación a producto.</td></tr>
+										</tbody>
+									</table>
+								</div>
+
+								<h2>Contexto y desafío</h2>
+								<p>Las plantas solares de concentración almacenan energía en sales fundidas, que corroen el acero 347H de tanques y tuberías. Evaluar esa corrosión exigía campañas experimentales de meses, y eso frenaba las decisiones sobre materiales.</p>
+								<p>J. C. Reinoso-Burrows, investigador principal, había propuesto un modelo de autómata celular para simular la corrosión del 347H en sal solar a escala de planta piloto (<a href="https://www.mdpi.com/1996-1944/18/3/713"><i>Materials</i>, 2025</a>). El proyecto ANID VIU 24P0174 buscaba convertir esa investigación en una herramienta de software validada contra datos medidos.</p>
+
+								<h2>Análisis y solución</h2>
+								<ul>
+									<li><b>El modelo.</b> Una malla de 400 × 400 celdas de 0,125 µm, donde cada iteración representa 10,08 s de exposición: simular las 168 h del ensayo exige 60 000 iteraciones.</li>
+									<li><b>De Python a Go.</b> La primera versión la hice en Python 3, que no permitía ejecutar tareas en paralelo de verdad. Reescribí el motor en Go, que da concurrencia real.</li>
+									<li><b>Validación.</b> Un pipeline automatizado compara la simulación con datos de caracterización SEM-EDS.</li>
+									<li><b>Plataforma.</b> El motor en Go se completa con una API de servicios y una visualización web 2D/3D.</li>
+								</ul>
+
+								<h2>Mi contribución</h2>
+								<p>Fui el investigador a cargo de implementar el autómata celular y el arquitecto del software: el motor en Python y luego en Go, la API, la visualización web y el pipeline de validación. Trabajé con J. C. Reinoso-Burrows y con los profesores M. Cortés-Carmona, M. Henríquez y E. Fuentealba, coautores del artículo en <i>Materials</i>.</p>
+
+								<h2>Resultados</h2>
+								<ul>
+									<li>Modelo validado contra SEM-EDS: <b>error cuadrático medio de un 2 %</b> (capa de óxido de 4,25 µm tras 168 h) y <b>R² = 0,97</b> entre simulación y experimento.</li>
+									<li>El ciclo de evaluación pasó <b>de meses a horas</b>.</li>
+									<li>Plataforma en <b>TRL 6</b>, con patente en trámite y resultados publicados en <i>Materials</i> 18(3):713 (2025).</li>
+									<li>Hoy la usa el <a href="https://www.cdeaua.cl/home/laboratoriosalesfundidas/">Laboratorio de Sales Fundidas del CDEA</a> de la Universidad de Antofagasta para su investigación.</li>
+									<li>Al cierre del proyecto, en noviembre de 2025, fundamos <b>Novatherm Analytics</b>, donde soy CTO e ingeniero de I+D. Trabajamos para integrar DegradIA con simulaciones CFD de corrosión dinámica en planta piloto, con miras a una batería de Carnot con sales fundidas.</li>
+								</ul>
+
+								<h2>Aprendizajes</h2>
+								<ul>
+									<li>El volumen de cómputo define la arquitectura: 60 000 iteraciones sobre 160 000 celdas por simulación necesitaban concurrencia real, y eso llevó el motor a Go.</li>
+									<li>Un modelo científico validado puede convertirse en producto: con un usuario real, una patente en curso y una empresa que lo continúa.</li>
+									<li>Qué haría distinto: generar más datos experimentales reales desde el inicio, para poder empezar a usar machine learning sobre el modelo.</li>
+								</ul>
+
+								<ul class="actions special">
+									<li><a href="caso-fmeco.html" class="button">Caso anterior: Formality ECO</a></li>
+									<li><a href="index.html" class="button primary">Volver a proyectos</a></li>
+								</ul>
+							</section>
+
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<section class="split contact">
+							<section class="alt">
+								<h3>Address</h3>
+								<p>Valparaiso, Chile</p>
+							</section>
+							<section>
+								<h3>Phone</h3>
+								<p><a href="#">+56985624931</a></p>
+							</section>
+							<section>
+								<h3>Email</h3>
+								<p><a href="#">andres.alvear5@gmail.com</a></p>
+							</section>
+							<section>
+								<h3>Social</h3>
+								<ul class="icons alt">
+									<li><a href="https://www.linkedin.com/in/andres-alvear-028bb01ba/" class="icon brands alt fa-linkedin"><span class="label">Linkedin</span></a></li>
+									<li><a href="https://github.com/andriu5" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+								</ul>
+							</section>
+						</section>
+					</footer>
+
+				<!-- Copyright -->
+					<div id="copyright">
+						<ul><li>&copy; aalvearc</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li></ul>
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

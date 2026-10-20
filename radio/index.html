@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radio SDR desde Santiago</title>
+<meta name="description" content="Guías de RTL-SDR: instalación, FM, satélites Meteor y TV digital desde Santiago de Chile.">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<div class="pagina">
+<header class="sitio">
+  <a class="nombre" href="index.html">Radio SDR desde Santiago</a>
+  <nav><a href="index.html">Guías</a><a href="../index.html">Portafolio</a></nav>
+</header>
+<main>
+<h1>Radio SDR desde Santiago</h1>
+<p>Notas de mi estación de radio definida por software: un dongle <strong>RTL-SDR Blog V4L</strong>
+con una antena dipolo, en Windows, desde Santiago de Chile. Las escribo para ordenar lo que voy
+probando: instalar los drivers, recorrer la banda de FM, grabar satélites meteorológicos Meteor
+y medir la TV digital ISDB-Tb.</p>
+<p class="tenue">Todo está escrito paso a paso, con los comandos exactos que usé y lo que salió,
+incluidos los intentos que no funcionaron.</p>
+<h2>Guías</h2>
+<ul class="guias">
+<li><a href="01-instalacion.html">1. Instalación y primeras pruebas</a><p>drivers, Zadig, SDR#, SDR++, <code>rtl_test</code>, antena.</p></li>
+<li><a href="02-barrido-fm.html">2. Barrido de banda ancha con rtl_power</a><p>ejemplo con la banda FM y cómo evitar la saturación.</p></li>
+<li><a href="03-satelites.html">3. Satélites</a><p>predecir pasos, grabar automáticamente con una tarea de Windows, analizar y decodificar con SatDump.</p></li>
+<li><a href="04-tv-digital.html">4. TV digital</a><p>mapear los canales ISDB-Tb de UHF con <code>rtl_power</code> y <code>canales_tv.py</code>.</p></li>
+<li><a href="05-isdbt-grabacion.html">5. Grabación ISDB-Tb para FPGA</a><p>grabación IQ validada del canal 29, sus parámetros OFDM (modo, guarda, CFO, SCO) y vectores para testbench HDL.</p></li>
+</ul>
+</main>
+<footer>Andrés Alvear · Actualizado el 2026-10-19 · Sin cookies ni JavaScript</footer>
+</div>
+</body>
+</html>

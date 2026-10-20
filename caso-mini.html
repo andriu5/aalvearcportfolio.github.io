@@ -1,0 +1,160 @@
+<!DOCTYPE HTML>
+<!--
+	Massively by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html lang="es">
+	<head>
+		<title>Espectrómetro digital del radiotelescopio MINI | Andrés Alvear</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<meta name="description" content="Caso de proyecto: back-end digital en FPGA con separación de bandas laterales para el radiotelescopio MINI de 80 a 116 GHz." />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			@media screen and (max-width: 736px) {
+				table.resumen td { display: block; padding-top: 0.25em; padding-bottom: 0.25em; }
+				table.resumen td:first-child { padding-top: 0.9em; }
+				table.resumen td:last-child { padding-bottom: 0.9em; }
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<a href="index.html" class="logo">Andrés Alvear's Portfolio</a>
+					</header>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul class="links">
+							<li><a href="index.html">Projects</a></li>
+							<li class="active"><a href="caso-mini.html">MINI</a></li>
+							<li><a href="caso-fmeco.html">Formality ECO</a></li>
+							<li><a href="caso-degradia.html">DegradIA</a></li>
+						</ul>
+						<ul class="icons">
+							<li><a href="https://www.linkedin.com/in/andres-alvear-028bb01ba/" class="icon brands alt fa-linkedin"><span class="label">Linkedin</span></a></li>
+							<li><a href="https://github.com/andriu5" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Post -->
+							<section class="post">
+								<header class="major">
+									<span class="date">2015 – 2016 · Lab. de Ondas Milimétricas, U. de Chile</span>
+									<h1>Espectrómetro digital<br />
+									del radiotelescopio MINI</h1>
+									<p>Back-end en FPGA que separa digitalmente las bandas laterales de un receptor de 80 a 116 GHz,<br />
+									con un rechazo entre 100 y 1000 veces mejor que la electrónica analógica.</p>
+								</header>
+
+								<div class="image main"><img src="images/mini_first_light.png" alt="Espectro de primera luz del radiotelescopio MINI: un pico claro de la nebulosa de Orión sobre una línea base plana" /></div>
+								<p><em>Primera luz del MINI con el back-end en ROACH, 23 de marzo de 2016: espectro de la nebulosa de Orión. Se obtuvo con la ROACH como espectrómetro simple, todavía sin la separación de bandas activa.</em></p>
+
+								<h2>En resumen</h2>
+								<div class="table-wrapper">
+									<table class="resumen">
+										<tbody>
+											<tr><td><b>Desafío</b></td><td>Separar digitalmente las bandas laterales de un receptor de 80–116 GHz con unos 50 dB de rechazo, donde lo analógico llega a 10–20 dB, e integrar el back-end al telescopio.</td></tr>
+											<tr><td><b>Enfoque</b></td><td>Calibración digital de los desbalances del front-end, floorplanning manual para duplicar el reloj y un serializador para sincronizar la FPGA con el computador del telescopio.</td></tr>
+											<tr><td><b>Mi contribución</b></td><td>Diseño e implementación del back-end en FPGA y de su interfaz con el control del telescopio, scripts en Python y mediciones en laboratorio.</td></tr>
+											<tr><td><b>Resultados</b></td><td>Primera luz del telescopio con el nuevo back-end; en laboratorio, rechazo sobre 40 dB y ancho de banda duplicado a 1 GHz por banda lateral; primer autor en SPIE.</td></tr>
+											<tr><td><b>Competencias</b></td><td>DSP en FPGA, RF y receptores heterodinos, optimización de timing, integración hardware-software, medición y publicación científica.</td></tr>
+										</tbody>
+									</table>
+								</div>
+
+								<h2>Contexto y desafío</h2>
+								<p>El radiotelescopio MINI, de 1,2 m, observa entre 80 y 116 GHz y se estaba actualizando para medir varias líneas moleculares a la vez, desde el SiO a 86 GHz hasta el CO a 115,3 GHz. Para eso usa un receptor 2SB, que entrega por separado la banda lateral superior (USB) y la inferior (LSB).</p>
+								<p>Con electrónica solo analógica, la separación entre bandas queda limitada a 10–20 dB, porque depende del ajuste fino de ganancia y fase de cada componente. La meta era llegar a unos 50 dB con procesamiento digital, con 2048 canales por banda, resolución de 488 kHz, 1 GHz de ancho de banda por banda lateral y comunicación con el computador del telescopio, un microcontrolador PIC32.</p>
+								<p>El diseño de partida era el espectrómetro que Ricardo Finger desarrolló en su doctorado y que demostró la técnica en laboratorio. Mi trabajo era convertirlo en un back-end que funcionara dentro del telescopio.</p>
+
+								<h2>Análisis y solución</h2>
+								<p>Siguiendo la arquitectura original, el sistema se dividió en dos modelos sobre una placa ROACH (FPGA Xilinx Virtex-5): un espectrómetro de calibración, que mide los desbalances de fase y amplitud del front-end y de los ADC, y un espectrómetro de separación de bandas (DSSS), que aplica las constantes de calibración en cada canal.</p>
+								<ul>
+									<li><b>Velocidad.</b> El diseño compilaba a 125 MHz, lo que daba solo 500 MHz de ancho de banda. Evalué cinco alternativas: una FPGA más grande (ROACH II), un chip más rápido, un diseño más chico, reorganizar el diseño en bloques regulares y el floorplanning manual. Elegí el floorplanning con PlanAhead porque llegaba a 250 MHz con el mismo hardware: ubiqué el banco de filtros polifásico junto a las entradas, dividí la FFT de 4096 puntos en etapas y dejé el acumulador junto a las salidas.</li>
+									<li><b>Interfaz con el telescopio.</b> El PIC32 es un procesador de una sola tarea, con sus propios timers, y la FPGA procesa la señal con su propio reloj. Diseñé un serializador: un contador de acumulaciones que el PIC lee por Ethernet como aviso de datos nuevos, y multiplexores con FIFO que pasan los cuatro flujos paralelos de la FFT a una sola memoria por banda. Serializar los 2048 canales toma 8,2 µs a 250 MHz.</li>
+									<li><b>Datos.</b> Reduje cada canal de 64 a 32 bits para que el PIC32 pudiera procesarlo, ajustando la ganancia digital para no perder rango dinámico.</li>
+									<li><b>Cambio de requisitos.</b> A mitad de proyecto el telescopio pasó a necesitar un modo libre (<i>free running</i>), sin control de datos. Rediseñé la escritura en memoria como una máquina de estados disparada por cada nueva acumulación.</li>
+								</ul>
+
+								<h2>Mi contribución</h2>
+								<p>Fui responsable del back-end digital en la FPGA: los modelos de calibración y DSSS (librerías CASPER, Simulink y System Generator), el floorplanning, el serializador, gran parte de los scripts de control y prueba en Python (KATCP) y las mediciones de rechazo de banda lateral con un pseudo front-end en laboratorio. Del lado del telescopio, Pablo Vásquez, ingeniero encargado del MINI, implementó el protocolo KATCP en el PIC32.</p>
+								<p>Trabajé con Ricardo Finger (Technical Lead del proyecto), Pablo Vásquez, Camilo Avilés (ingeniería mecánica) y Francisco Navarrete (ingeniería de RF), junto a los profesores F. Patricio Mena y Nicolás Reyes (DIE) y Leonardo Bronfman (DAS) de la Universidad de Chile.</p>
+
+								<h2>Resultados</h2>
+								<ul>
+									<li><b>Primera luz, 23 de marzo de 2016:</b> el telescopio obtuvo con el back-end en ROACH un espectro inequívoco de la nebulosa de Orión.</li>
+									<li><b>En laboratorio:</b> rechazo de banda lateral sobre 40 dB con un rango dinámico de unos 50 dB, entre 100 y 1000 veces mejor que la tecnología analógica.</li>
+									<li><b>Ancho de banda duplicado</b>, de 500 MHz a 1 GHz por banda lateral, sin cambiar de hardware.</li>
+									<li><b>Publicaciones:</b> fue la base de mi magíster (nota 7,0), primer autor en SPIE (2016) y coautor en dos artículos de <i>Astronomy &amp; Astrophysics</i> (2015 y 2018).</li>
+									<li><b>Continuidad:</b> una memoria de pregrado reciente reimplementó el espectrómetro en la tarjeta CASPER RFSoC 4x2.</li>
+								</ul>
+
+								<h2>Aprendizajes</h2>
+								<ul>
+									<li>Las herramientas automáticas de ubicación rinden mal en diseños DSP grandes; ordenar el diseño a mano en el chip duplicó el rendimiento sin comprar hardware nuevo.</li>
+									<li>Un diseño modular absorbe los cambios de requisitos: el serializador y la máquina de estados se agregaron sin rehacer los espectrómetros.</li>
+									<li>Qué haría distinto: escribiría los scripts de control en Go en vez de Python, para leer varios registros y memorias de la FPGA de forma concurrente.</li>
+								</ul>
+
+								<ul class="actions special">
+									<li><a href="index.html" class="button">Volver a proyectos</a></li>
+									<li><a href="caso-fmeco.html" class="button primary">Siguiente caso: Formality ECO</a></li>
+								</ul>
+							</section>
+
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<section class="split contact">
+							<section class="alt">
+								<h3>Address</h3>
+								<p>Valparaiso, Chile</p>
+							</section>
+							<section>
+								<h3>Phone</h3>
+								<p><a href="#">+56985624931</a></p>
+							</section>
+							<section>
+								<h3>Email</h3>
+								<p><a href="#">andres.alvear5@gmail.com</a></p>
+							</section>
+							<section>
+								<h3>Social</h3>
+								<ul class="icons alt">
+									<li><a href="https://www.linkedin.com/in/andres-alvear-028bb01ba/" class="icon brands alt fa-linkedin"><span class="label">Linkedin</span></a></li>
+									<li><a href="https://github.com/andriu5" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+								</ul>
+							</section>
+						</section>
+					</footer>
+
+				<!-- Copyright -->
+					<div id="copyright">
+						<ul><li>&copy; aalvearc</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li></ul>
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

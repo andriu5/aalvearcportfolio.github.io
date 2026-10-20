@@ -1,3 +1,22 @@
+Licencias de este repositorio
+=============================
+
+1. Plantilla (diseño, CSS, JavaScript y fuentes en assets/, y la estructura HTML
+   de las páginas): "Massively" de HTML5 UP (html5up.net, AJ @ajlkn), distribuida
+   bajo la licencia Creative Commons Attribution 3.0 Unported, cuyo texto completo
+   está más abajo. La plantilla original fue modificada: contenido propio, páginas
+   nuevas y ajustes menores de estilo.
+
+2. Contenido propio (textos, casos de proyecto, guías de radio/, diagramas y
+   fotografías propias): Copyright (c) 2022-2026 Andrés Alvear. Todos los
+   derechos reservados. No está cubierto por la licencia de la plantilla.
+
+3. Componentes de terceros incluidos con la plantilla mantienen sus propias
+   licencias: Font Awesome, jQuery, Scrollex y Responsive Tools. La foto de la
+   tarjeta NEOs es de NASA en Unsplash.
+
+-------------------------------------------------------------------------------
+
 Creative Commons Attribution 3.0 Unported
 http://creativecommons.org/licenses/by/3.0/
 

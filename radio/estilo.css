@@ -1,0 +1,46 @@
+:root {
+  --fondo: #fbfaf7; --texto: #1d1d1b; --tenue: #6b6a65; --borde: #dedbd2;
+  --acento: #b4441d; --codigo: #f1efe8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fondo: #16171a; --texto: #e6e4de; --tenue: #9a988f; --borde: #34353a;
+    --acento: #f08a5d; --codigo: #222328;
+  }
+}
+:root[data-theme="dark"] {
+  --fondo: #16171a; --texto: #e6e4de; --tenue: #9a988f; --borde: #34353a;
+  --acento: #f08a5d; --codigo: #222328;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--fondo); color: var(--texto);
+  font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.pagina { max-width: 46rem; margin: 0 auto; padding: 1.5rem 16px 4rem; }
+header.sitio { display: flex; flex-wrap: wrap; gap: .25rem 1rem; align-items: baseline;
+  border-bottom: 1px solid var(--borde); padding-bottom: .75rem; margin-bottom: 2rem; }
+header.sitio a.nombre { font-weight: 700; color: var(--texto); text-decoration: none; }
+header.sitio nav { display: flex; gap: 1rem; font-size: .9rem; }
+a { color: var(--acento); }
+h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 1rem; }
+h2 { font-size: 1.35rem; margin: 2.5rem 0 .75rem; }
+h3 { font-size: 1.1rem; margin: 2rem 0 .5rem; }
+code { font: .88em/1.5 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  background: var(--codigo); padding: .1em .3em; border-radius: 3px; }
+pre { background: var(--codigo); padding: .8rem 1rem; overflow-x: auto; border-radius: 4px; }
+pre code { padding: 0; background: none; }
+.tabla { overflow-x: auto; margin: 1rem 0; }
+table { border-collapse: collapse; font-size: .92rem; width: 100%; }
+th, td { border-bottom: 1px solid var(--borde); padding: .4rem .6rem; text-align: left; vertical-align: top; }
+th { border-bottom-width: 2px; }
+img { max-width: 100%; height: auto; border: 1px solid var(--borde); }
+ul.guias { list-style: none; padding: 0; }
+ul.guias li { padding: .9rem 0; border-bottom: 1px solid var(--borde); }
+ul.guias a { font-weight: 600; }
+ul.guias p { margin: .2rem 0 0; color: var(--tenue); font-size: .95rem; }
+.tenue { color: var(--tenue); font-size: .9rem; }
+nav.pasos { display: flex; justify-content: space-between; gap: 1rem; margin-top: 3rem;
+  padding-top: 1rem; border-top: 1px solid var(--borde); font-size: .95rem; }
+footer { margin-top: 3rem; color: var(--tenue); font-size: .85rem; }

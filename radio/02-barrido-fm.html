@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2. Barrido de banda ancha con rtl_power (ejemplo: FM 88–108 MHz) · Radio SDR desde Santiago</title>
+<meta name="description" content="ejemplo con la banda FM y cómo evitar la saturación.">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<div class="pagina">
+<header class="sitio">
+  <a class="nombre" href="index.html">Radio SDR desde Santiago</a>
+  <nav><a href="index.html">Guías</a><a href="../index.html">Portafolio</a></nav>
+</header>
+<main>
+<h1 id="2-barrido-de-banda-ancha-con-rtl_power-ejemplo-fm-88108-mhz">2. Barrido de banda ancha con <code>rtl_power</code> (ejemplo: FM 88–108 MHz)</h1>
+<p>El dongle solo ve unos 2.4 MHz a la vez. <code>rtl_power</code> salta de una ventana a otra y arma
+un espectro ancho. No es en tiempo real, pero sirve para ver una banda completa.</p>
+<h2 id="paso-1-cerrar-sdr-y-sdr">Paso 1: cerrar SDR# y SDR++</h2>
+<p>Solo un programa puede usar el dongle a la vez.</p>
+<h2 id="paso-2-ejecutar-el-barrido">Paso 2: ejecutar el barrido</h2>
+<p>Desde la carpeta del proyecto (<code>C:\...\rtl-sdr_v4l</code>):</p>
+<pre><code class="language-bash">drivers/rtlsdrblog-V1.4.0/x64/rtl_power.exe -f 88M:108M:10k -g 0 -c 25% -i 10 -e 1m scans/fm_scan.csv
+</code></pre>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Opción</th>
+<th>Significado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-f 88M:108M:10k</code></td>
+<td>De 88 a 108 MHz, con resolución de 10 kHz</td>
+</tr>
+<tr>
+<td><code>-g 0</code></td>
+<td>Ganancia del tuner en dB. <strong>En Santiago, usa 0 para la banda FM</strong> (ver abajo)</td>
+</tr>
+<tr>
+<td><code>-c 25%</code></td>
+<td>Descarta el 25% de los bordes de cada salto, donde el filtro atenúa</td>
+</tr>
+<tr>
+<td><code>-i 10</code></td>
+<td>Una línea (barrido completo) cada 10 segundos</td>
+</tr>
+<tr>
+<td><code>-e 1m</code></td>
+<td>Termina después de 1 minuto (<code>30s</code>, <code>5m</code>, <code>1h</code>...)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Al final imprime <code>User cancel, exiting...</code>: es normal, significa que terminó el tiempo de <code>-e</code>.</p>
+<h2 id="paso-3-graficar">Paso 3: graficar</h2>
+<pre><code class="language-bash">python tools/graficar_power.py scans/fm_scan.csv 10
+</code></pre>
+<p>Crea <code>scans/fm_scan.png</code> (espectro promedio + waterfall) y lista las señales que superan
+el piso de ruido en más de 10 dB (el segundo argumento).</p>
+<h2 id="resultado-del-2026-10-02-santiago-ganancia-0-db">Resultado del 2026-10-02 (Santiago, ganancia 0 dB)</h2>
+<p><img alt="Barrido FM" src="img/fm_scan.png" /></p>
+<p>Se detectaron <strong>36 emisoras</strong>. Las más fuertes son 103.5, 89.9, 102.9, 98.9 y 98.1 MHz.
+La 102.1 MHz, la que escuchabas en SDR#, aparece a +32 dB sobre el ruido.</p>
+<h2 id="por-que-ganancia-0-y-no-30">Por qué ganancia 0 y no 30</h2>
+<p>Primero se ejecutó el comando con <code>-g 30</code> y sin <code>-c</code>. El resultado está en
+<code>scans/fm_scan_g30_saturado.png</code>:</p>
+<p><img alt="Barrido saturado" src="img/fm_scan_g30_saturado.png" /></p>
+<ul>
+<li><strong>Qué se ve:</strong> escalones cada 2.5 MHz, porque cada salto tiene un piso distinto, y la
+  detección encuentra 0 emisoras claras.</li>
+<li><strong>Por qué pasa:</strong> las FM locales son tan fuertes que, con 30 dB, saturan el ADC de 8 bits.
+  Eso levanta el ruido de todo el salto.</li>
+<li><strong>Cómo detectarlo:</strong> si al subir la ganancia el piso sube tanto como las señales, o
+  aparecen escalones o señales fantasma, baja la ganancia.</li>
+</ul>
+<h2 id="otras-bandas-de-ejemplo">Otras bandas de ejemplo</h2>
+<pre><code class="language-bash">drivers/rtlsdrblog-V1.4.0/x64/rtl_power.exe -f 118M:137M:5k -g 30 -c 25% -i 10 -e 10m scans/aviacion.csv
+</code></pre>
+<pre><code class="language-bash">drivers/rtlsdrblog-V1.4.0/x64/rtl_power.exe -f 144M:148M:2k -g 30 -c 25% -i 10 -e 10m scans/2m.csv
+</code></pre>
+<pre><code class="language-bash">drivers/rtlsdrblog-V1.4.0/x64/rtl_power.exe -f 400M:470M:25k -g 30 -c 25% -i 30 -e 15m scans/uhf.csv
+</code></pre>
+<p>Fuera de la banda FM se puede usar más ganancia (20–40 dB). Si ves escalones, bájala.
+Las señales intermitentes (aviación, radioaficionados) se ven mejor en el waterfall con <code>-e</code> largo.</p>
+<nav class="pasos"><a href="01-instalacion.html">← Instalación y primeras pruebas</a><a href="03-satelites.html">Satélites →</a></nav>
+</main>
+<footer>Andrés Alvear · Actualizado el 2026-10-19 · Sin cookies ni JavaScript</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>7. Receiving SSTV images from the ISS (ARISS Series 34) · SDR Radio from Santiago</title>
+<meta name="description" content="ARISS Series 34 on 437.550 MHz, a Python toolchain that removes the ±10 kHz Doppler shift and decodes Robot36, and two slides received from the Concón dunes.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="pagina">
+<header class="sitio">
+  <a class="nombre" href="index.html">SDR Radio from Santiago</a>
+  <nav><a href="index.html">Guides</a><a href="../index.html">Portfolio</a></nav>
+</header>
+<main>
+<h1 id="7-receiving-sstv-images-from-the-iss-ariss-series-34">7. Receiving SSTV images from the ISS (ARISS Series 34)</h1>
+<p>Log for 2026-10-23. ARISS ran an SSTV event from the International Space Station: 12 slides about ARISS
+hardware, sent in Robot36 on 437.550 MHz FM. I wrote a small Python toolchain to predict the passes,
+record raw IQ, remove the Doppler shift and decode the images. I took it to the Concón dunes for the
+22:40 pass. Two of the three transmissions in that pass came out as images: slide 3/12 clearly and
+slide 2/12 only in its top third. I submitted both to the ARISS gallery and requested the event
+certificate as a shortwave listener (SWL). A few hours later, slide 3/12 was accepted into the public
+ARISS SSTV archive.</p>
+<p><img alt="Slide 2/12 and slide 3/12 as received in Concón, next to the ARISS originals" src="img/20261023_iss_sstv_imagenes.png" /></p>
+<h2 id="the-event">The event</h2>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Event</td>
+<td>ARISS SSTV Series 34, "ARISS Hardware" (Expedition 75)</td>
+</tr>
+<tr>
+<td>Window</td>
+<td>Thu 22 Oct 15:30 UTC to Sun 25 Oct 18:00 UTC</td>
+</tr>
+<tr>
+<td>Downlink</td>
+<td>437.550 MHz FM, callsigns RS0ISS / NA1SS</td>
+</tr>
+<tr>
+<td>Mode</td>
+<td>Robot36: 320×240, colour, 36 s per image</td>
+</tr>
+<tr>
+<td>Cycle</td>
+<td>36 s on, about 2 min off</td>
+</tr>
+</tbody>
+</table></div>
+<p>Two numbers shaped the whole design:</p>
+<ul>
+<li><strong>Doppler of ±10 kHz.</strong> The ISS moves at about 7.7 km/s. At 437.55 MHz that shifts the carrier
+  by up to ±10 kHz, three times more than on the older 145.800 MHz SSTV events. A 25 kHz FM channel
+  that doesn't follow the satellite clips part of the signal near the start and the end of the pass.</li>
+<li><strong>About 6 minutes per pass.</strong> With an image every ~2.5 min, a good pass gives 2–3 images. Missing
+  one costs a lot.</li>
+</ul>
+<h2 id="hardware">Hardware</h2>
+<p><strong>RTL-SDR Blog V4L → short coax → dipole</strong>, nothing else: no LNA and no filter. The LNA from
+<a href="06-home-passes-lna.html">guide 6</a> is a 137 MHz filter module, so it is of no use at 437 MHz.</p>
+<p><img alt="The dipole with each arm set to 163 mm" src="img/20261023_dipolo_163mm.jpg" /></p>
+<p>At 437.55 MHz a quarter wavelength is 171 mm. Shortened by the usual ~5% for the thickness of the
+elements, that gives 163 mm per arm, measured from the edge of the mount to the tip. For satellites
+the arms should open to about 120° and the whole V should lie horizontal. As I found out later, that
+detail matters.</p>
+<h2 id="software">Software</h2>
+<p>Everything is in <code>iss_sstv/</code>, separate from the other tools, with its own virtual environment created
+with the Windows <code>py</code> launcher. I run it from Ubuntu (WSL) through small bash wrappers. Those wrappers
+call the <strong>Windows</strong> Python of the venv, so the dongle stays on Windows with the WinUSB driver and no
+USB passthrough to WSL is needed.</p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Script</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>passes.py</code></td>
+<td>Downloads the ISS TLE from CelesTrak and lists the passes above 10° for the next 48 h in Chile time, flagging the ones before the end of the event</td>
+</tr>
+<tr>
+<td><code>record.py</code></td>
+<td>Records raw IQ (<code>.cu8</code>) at 1.024 MSps centred on 437.550 MHz, from 1 min before AOS to 1 min after LOS, plus a JSON with the UTC start time, rate, frequency, gain and TLE. It waits for the pass with a countdown</td>
+</tr>
+<tr>
+<td><code>decode.py</code></td>
+<td>Removes the Doppler shift, demodulates FM, writes a 48 kSps WAV and decodes every Robot36 image to <code>ISS_YYYYMMDD_HHMMSSZ.png</code></td>
+</tr>
+<tr>
+<td><code>auto.py</code></td>
+<td>Picks the next useful pass, then waits, records and decodes</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="two-problems-with-the-rtl-sdr-library">Two problems with the RTL-SDR library</h3>
+<ul>
+<li><strong>The RTL-SDR Blog <code>rtlsdr.dll</code> is self-contained.</strong> It has libusb linked in, so <code>libusb-1.0.dll</code>
+  is not needed. I found that by listing the DLLs the file imports.</li>
+<li><strong>Recent pyrtlsdr does not load it.</strong> pyrtlsdr 0.4 and 0.5 refuse to import with this DLL. They
+  require <code>rtlsdr_set_dithering</code> and <code>rtlsdr_set_gpio_*</code>, which come from another fork and are not in
+  the RTL-SDR Blog build. I pinned <strong>pyrtlsdr 0.3.0</strong> instead of switching to the osmocom DLL, which
+  does not handle the V4 well. The code also checks at run time which <code>rtlsdr.dll</code> Windows actually
+  loaded.</li>
+</ul>
+<h3 id="removing-the-doppler-shift">Removing the Doppler shift</h3>
+<p><code>decode.py</code> processes the recording in blocks of about one second:</p>
+<pre><code class="language-text">IQ 1.024 MSps → remove DC → low-pass, ÷10 → 102.4 kSps → Doppler mixer → 25 kHz channel, ÷2 → 51.2 kSps
+→ FM discriminator → 300–3000 Hz band-pass → 48 kSps WAV → VIS search → Robot36 → PNG
+</code></pre>
+<p>The Doppler curve comes from the TLE. Skyfield gives the range rate between the ISS and my location
+every 0.5 s, and the shift is <code>−f · range_rate / c</code>. Each sample gets its own frequency by
+interpolation. The mixer accumulates phase in float64 and carries it from one block to the next, so
+there are no jumps at the block edges:</p>
+<pre><code class="language-python">class Mezclador:
+    def __init__(self, fs):
+        self.fs = float(fs)
+        self.ciclos = 0.0  # accumulated phase, in cycles, modulo 1
+
+    def __call__(self, x, f):
+        f = np.broadcast_to(np.asarray(f, dtype=np.float64), (len(x),))
+        acum = np.empty(len(x)); acum[0] = 0.0
+        np.cumsum(f[:-1], out=acum[1:])
+        fase = self.ciclos + acum / self.fs
+        self.ciclos = float((fase[-1] + f[-1] / self.fs) % 1.0)
+        fase -= np.floor(fase)
+        return x * np.exp(-2j * np.pi * fase).astype(np.complex64)
+</code></pre>
+<p>The filters work the same way: each block is filtered together with the tail of the previous one, so
+the output is identical to filtering the whole recording at once.</p>
+<h3 id="finding-and-decoding-the-images">Finding and decoding the images</h3>
+<ul>
+<li><strong>VIS header.</strong> Each SSTV image starts with a header: 300 ms at 1900 Hz, a 1200 Hz start bit, then 7
+  data bits and a parity bit, each 30 ms long. Robot36 is code 8. <code>decode.py</code> tracks the tone frequency
+  of the audio, finds every header and uses it to split the recording into images and to timestamp
+  each one.</li>
+<li><strong>Lost headers.</strong> A weak signal can lose its header while the image itself is still readable.
+  A second search looks for trains of 1200 Hz sync pulses spaced 150 ms apart, the line period of
+  Robot36, in the parts of the recording with no header.</li>
+<li><strong>Primary decoder.</strong> Each image's audio goes to the <code>sstv</code> package, a wrapper around a Rust crate
+  that handles Robot36.</li>
+<li><strong>Fallback decoder.</strong> If the package fails, a Robot36 decoder of my own takes over. It finds the
+  1200 Hz sync pulse of every line, fits a straight line through their positions to correct slant, and
+  reads the brightness (88 ms per line) and the alternating R−Y / B−Y colour scans.</li>
+</ul>
+<h2 id="testing-before-going-out">Testing before going out</h2>
+<p>I could not test the receiver against the ISS before the pass, so I built a synthetic pass:</p>
+<ul>
+<li><strong>Images.</strong> Test images encoded in Robot36 with <strong>PySSTV</strong>, which shares no code with either decoder.</li>
+<li><strong>Modulation.</strong> FM with ±4 kHz deviation, on the 36 s on / 2 min off cycle.</li>
+<li><strong>Doppler.</strong> The real curve of the 22:40 pass, computed independently by differentiating the range
+  rather than with the range-rate formula that <code>decode.py</code> uses.</li>
+<li><strong>Channel.</strong> 1/r path loss and Gaussian noise.</li>
+</ul>
+<p>Mean absolute error per pixel between decoded and original images (0–255):</p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Recording</th>
+<th>Image 1 (+9.5 kHz)</th>
+<th>Image 2 (+1.7 kHz)</th>
+<th>Image 3 (−9.2 kHz)</th>
+<th>Residual after correction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cu8 1.024 MSps, C/N 25 dB</td>
+<td>6.3</td>
+<td>5.4</td>
+<td>6.4</td>
+<td>median 0.7 Hz, max 31 Hz</td>
+</tr>
+<tr>
+<td>SDR++ WAV 250 kSps, centre 437.600 MHz, C/N 18 dB</td>
+<td>9.1</td>
+<td>6.4</td>
+<td>8.7</td>
+<td>median 1.1 Hz, max 28 Hz</td>
+</tr>
+<tr>
+<td>cu8 without Doppler correction</td>
+<td>8.2</td>
+<td>5.4</td>
+<td>6.7</td>
+<td>up to 9.3 kHz</td>
+</tr>
+</tbody>
+</table></div>
+<p>Without the Doppler correction the images still came out, a little worse. At that C/N the correction
+mostly buys margin. The test also showed the decoder reading SDR++ recordings correctly: SDR++ puts
+local time in its file names, and the code converts it with <code>America/Santiago</code>.</p>
+<h2 id="the-field-night">The field night</h2>
+<p>The 22:40 pass was the best of the evening: AOS 22:39:59 in the southwest, maximum 53° at 22:43:20 in
+the southeast, LOS 22:46:38 in the east-northeast. I took the laptop to the Concón dunes for an open
+horizon. The commands for the night:</p>
+<pre><code class="language-bash">cd /mnt/c/Users/andre/apps/rtl-sdr_v4l/iss_sstv
+./check.sh
+./record.sh --hora 22:40 --decodificar
+</code></pre>
+<p>The recording started at 22:39:28, 30 s after the planned AOS − 1 min, but still before the ISS rose
+above 10°. It lasted 490 s: 1.00 GB at a measured 1.0236 MSps, with no USB losses. The decode ran right
+after, on the same laptop.</p>
+<p><img alt="Channel power, elevation and Doppler during the pass" src="img/20261023_iss_sstv_senal.png" /></p>
+<p>The three transmissions are easy to see in the channel power:</p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Transmission</th>
+<th>Elevation</th>
+<th>Peak above noise</th>
+<th>Median above noise</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>22:39:43</td>
+<td>8–13°</td>
+<td>4.8 dB</td>
+<td>3.8 dB</td>
+<td>no VIS found, no image</td>
+</tr>
+<tr>
+<td>22:42:21</td>
+<td>38–51°</td>
+<td>8.3 dB</td>
+<td>4.1 dB</td>
+<td>VIS lost, found by its sync pulses; slide 2/12, top third only</td>
+</tr>
+<tr>
+<td>22:45:00</td>
+<td>18–25°</td>
+<td>11.4 dB</td>
+<td>8.6 dB</td>
+<td>VIS found; slide 3/12</td>
+</tr>
+</tbody>
+</table></div>
+<p>The fallback search earned its place: without it, slide 2 would not exist. Both images come from the
+<code>sstv</code> package. Re-decoding the same recording with both decoders and comparing with the originals
+(mean error, 0–255):</p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Slide</th>
+<th><code>sstv</code> package</th>
+<th>My decoder</th>
+<th>Syncs found by my decoder</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2/12</td>
+<td>89.7</td>
+<td>80.6</td>
+<td>60 of 240</td>
+</tr>
+<tr>
+<td>3/12</td>
+<td>24.1</td>
+<td>32.7</td>
+<td>186 of 240</td>
+</tr>
+</tbody>
+</table></div>
+<p>On the clean image the package wins clearly. On slide 2 both are mostly noise.</p>
+<p>The Doppler correction did its job. The pass went from +9.79 kHz to −9.88 kHz, and while the ISS was
+transmitting the signal stayed within about 130–240 Hz of the channel centre. That residual has the
+same sign and a similar size in all three transmissions, including the first one, where the Doppler
+barely changes. A clock or orbit error would grow with the rate of change of the Doppler, so this looks
+like a fixed frequency offset instead: most likely the dongle's oscillator, at about 0.5 ppm.</p>
+<h2 id="comparing-with-the-originals">Comparing with the originals</h2>
+<p>Later I got the original slides. Robot36 sends 240 lines, so I compared against the top 240 rows of each
+original.</p>
+<p><strong>Slide 3/12</strong> has no shift and no slant. The geometry, line timing and colours are all right. What it
+does have is noise, concentrated at the edges:</p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Rows</th>
+<th>Mean error (0–255)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–59</td>
+<td>36–41</td>
+</tr>
+<tr>
+<td>60–209</td>
+<td>14–19</td>
+</tr>
+<tr>
+<td>210–239</td>
+<td>35</td>
+</tr>
+</tbody>
+</table></div>
+<p>That matches the power trace: the signal was weaker at the start and at the end of that transmission.</p>
+<p><strong>Slide 2/12</strong> is mostly lost. Row by row correlation with the original:</p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Rows</th>
+<th>Correlation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–29</td>
+<td>0.07</td>
+</tr>
+<tr>
+<td>30–59</td>
+<td>0.20</td>
+</tr>
+<tr>
+<td>60–89</td>
+<td>0.55</td>
+</tr>
+<tr>
+<td>90–119</td>
+<td>0.25</td>
+</tr>
+<tr>
+<td>120–239</td>
+<td>about 0</td>
+</tr>
+</tbody>
+</table></div>
+<p>The recovered part lines up with the moment the signal peaked at +8 dB. After that it dropped to about
++3 dB, and FM below its threshold turns into noise.</p>
+<p>The odd result is that slide 2, sent near the top of the pass at 38–51°, came in weaker than slide 3
+at 18–25°. The ISS was closer then, so it should have been the strongest. A dipole standing upright
+has a null straight overhead, which would explain that pattern. In the next passes the V goes flat,
+facing the sky.</p>
+<h2 id="sharing-it">Sharing it</h2>
+<p>ARISS collects received images in its <a href="https://ariss-usa.org/ARISS_SSTV/">SSTV gallery</a>, and
+submitting one is how you request the event certificate. The form takes a name, a callsign (<code>SWL</code> for
+listeners without a licence), the Maidenhead grid square (FF47fb for the Concón dunes), and the UTC
+date and time of each image. The UTC date matters here: both images were received on the evening of
+23 Oct in Chile, which was already 24 Oct in UTC. I sent both slides as separate submissions and
+requested the certificate, which ARISS emails after the campaign.</p>
+<p>Volunteers review each submission before it goes public. Slide 3/12 passed that review and now appears
+in the <a href="https://ariss-usa.org/ARISS_SSTV/">ARISS SSTV archive</a> among the Series 34 images, listed as
+"Andres Alvear Cabezon, SWL, SouthAmerica, acquired 2026-10-24 01:45 UTC".</p>
+<h2 id="what-i-would-change">What I would change</h2>
+<ul>
+<li><strong>Mount the dipole flat, as a 120° V facing the sky.</strong> It is the cheapest fix, and it is aimed at the
+  high part of the pass, which should be the strongest.</li>
+<li><strong>Keep the coax short.</strong> At 437 MHz a 3 m run of thin RG174 coax loses about 2 dB. A USB extension
+  that brings the dongle to the antenna costs nothing.</li>
+<li><strong>Add a 70 cm LNA at the antenna.</strong> The signals were only 4–11 dB above the noise, which is right
+  at the FM threshold. A few dB more would have cleaned up both images and probably recovered the
+  first one.</li>
+<li><strong>Start a little earlier.</strong> The first transmission came at 8–13° elevation. Arriving early and
+  starting the recording on time costs nothing.</li>
+</ul>
+<h2 id="small-things-that-took-time">Small things that took time</h2>
+<ul>
+<li><strong>WSL and Ctrl+C.</strong> In WSL, Ctrl+C kills a Windows process outright: Python never sees a
+  <code>KeyboardInterrupt</code>. <code>record.py</code> therefore stops cleanly with <code>q</code> + Enter, and flushes the file and
+  its JSON every 10 s so a killed recording is still usable.</li>
+<li><strong>Timestamps.</strong> Recording and decoding work in UTC throughout, and only the screen output is in
+  Chile time. The PNG names are in UTC, so the 22:45 image is dated the next day.</li>
+<li><strong>Working offline.</strong> The dunes have no internet. Before leaving, <code>prepare.sh</code> refreshes the TLE, saves
+  the pass table, checks the dongle, compares the PC clock with internet time (it was 50 ms off) and
+  checks free disk. In the field the scripts fall back to the saved TLE.</li>
+</ul>
+<nav class="pasos"><a href="06-home-passes-lna.html">← Home passes and the LNA</a><span></span></nav>
+</main>
+<footer>Andrés Alvear · Updated 2026-10-24 · No cookies or JavaScript</footer>
+</div>
+</body>
+</html>

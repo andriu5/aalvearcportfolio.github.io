@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2. Wideband sweeps with rtl_power (example: FM 88–108 MHz) · SDR Radio from Santiago</title>
+<meta name="description" content="an FM band example and how to avoid overload.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="pagina">
+<header class="sitio">
+  <a class="nombre" href="index.html">SDR Radio from Santiago</a>
+  <nav><a href="index.html">Guides</a><a href="../index.html">Portfolio</a></nav>
+</header>
+<main>
+<h1 id="2-wideband-sweeps-with-rtl_power-example-fm-88108-mhz">2. Wideband sweeps with <code>rtl_power</code> (example: FM 88–108 MHz)</h1>
+<p>The dongle only sees about 2.4 MHz at a time. <code>rtl_power</code> hops from one window to the next and
+builds a wide spectrum. It is not real time, but it shows a whole band.</p>
+<h2 id="step-1-close-sdr-and-sdr">Step 1: close SDR# and SDR++</h2>
+<p>Only one program can use the dongle at a time.</p>
+<h2 id="step-2-run-the-sweep">Step 2: run the sweep</h2>
+<p>From the project folder (<code>C:\...\rtl-sdr_v4l</code>):</p>
+<pre><code class="language-bash">drivers/rtlsdrblog-V1.4.0/x64/rtl_power.exe -f 88M:108M:10k -g 0 -c 25% -i 10 -e 1m scans/fm_scan.csv
+</code></pre>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-f 88M:108M:10k</code></td>
+<td>From 88 to 108 MHz, with 10 kHz resolution</td>
+</tr>
+<tr>
+<td><code>-g 0</code></td>
+<td>Tuner gain in dB. <strong>In Santiago, use 0 for the FM band</strong> (see below)</td>
+</tr>
+<tr>
+<td><code>-c 25%</code></td>
+<td>Discards the 25% edges of each hop, where the filter rolls off</td>
+</tr>
+<tr>
+<td><code>-i 10</code></td>
+<td>One line (a full sweep) every 10 seconds</td>
+</tr>
+<tr>
+<td><code>-e 1m</code></td>
+<td>Stops after 1 minute (<code>30s</code>, <code>5m</code>, <code>1h</code>...)</td>
+</tr>
+</tbody>
+</table></div>
+<p>At the end it prints <code>User cancel, exiting...</code>: that is normal, it means the <code>-e</code> time ran out.</p>
+<h2 id="step-3-plot">Step 3: plot</h2>
+<pre><code class="language-bash">python tools/graficar_power.py scans/fm_scan.csv 10
+</code></pre>
+<p>It creates <code>scans/fm_scan.png</code> (average spectrum + waterfall) and lists the signals more than
+10 dB above the noise floor (the second argument). Add <code>--en</code> to get a copy with English labels,
+<code>scans/fm_scan_en.png</code>.</p>
+<h2 id="result-from-2026-10-02-santiago-0-db-gain">Result from 2026-10-02 (Santiago, 0 dB gain)</h2>
+<p><img alt="FM band sweep" src="img/fm_scan_en.png" /></p>
+<p><strong>36 stations</strong> were detected. The strongest are 103.5, 89.9, 102.9, 98.9 and 98.1 MHz.
+102.1 MHz, the station I was listening to in SDR#, shows up 32 dB above the noise.</p>
+<h2 id="why-gain-0-and-not-30">Why gain 0 and not 30</h2>
+<p>The command was first run with <code>-g 30</code> and without <code>-c</code>. The result is in
+<code>scans/fm_scan_g30_saturado.png</code>:</p>
+<p><img alt="Overloaded sweep" src="img/fm_scan_g30_saturado_en.png" /></p>
+<ul>
+<li><strong>What you see:</strong> steps every 2.5 MHz, because each hop has a different floor, and detection
+  finds no clear stations.</li>
+<li><strong>Why it happens:</strong> the local FM stations are so strong that, at 30 dB, they overload the 8-bit ADC.
+  That raises the noise across the whole hop.</li>
+<li><strong>How to spot it:</strong> if raising the gain lifts the floor as much as the signals, or steps or
+  ghost signals appear, lower the gain.</li>
+</ul>
+<h2 id="other-example-bands">Other example bands</h2>
+<pre><code class="language-bash">drivers/rtlsdrblog-V1.4.0/x64/rtl_power.exe -f 118M:137M:5k -g 30 -c 25% -i 10 -e 10m scans/aviacion.csv
+</code></pre>
+<pre><code class="language-bash">drivers/rtlsdrblog-V1.4.0/x64/rtl_power.exe -f 144M:148M:2k -g 30 -c 25% -i 10 -e 10m scans/2m.csv
+</code></pre>
+<pre><code class="language-bash">drivers/rtlsdrblog-V1.4.0/x64/rtl_power.exe -f 400M:470M:25k -g 30 -c 25% -i 30 -e 15m scans/uhf.csv
+</code></pre>
+<p>Outside the FM band you can use more gain (20–40 dB). If you see steps, lower it.
+Intermittent signals (aviation, amateur radio) are easier to see in the waterfall with a long <code>-e</code>.</p>
+<nav class="pasos"><a href="01-installation.html">← Setup and first tests</a><a href="03-satellites.html">Satellites →</a></nav>
+</main>
+<footer>Andrés Alvear · Updated 2026-10-24 · No cookies or JavaScript</footer>
+</div>
+</body>
+</html>

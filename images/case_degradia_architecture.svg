@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="1000" height="450" role="img" aria-label="Diagrama de la arquitectura de DegradIA" font-family="'Source Sans Pro', Helvetica, Arial, sans-serif"><title>Diagrama de la arquitectura de DegradIA</title><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6670"/></marker></defs><rect width="1000" height="450" fill="#f7f9fb"/><text x="20" y="40" font-size="22" font-weight="700" fill="#212931" text-anchor="start">DegradIA: del modelo publicado a una herramienta en uso</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="1000" height="450" role="img" aria-label="DegradIA architecture diagram" font-family="'Source Sans Pro', Helvetica, Arial, sans-serif"><title>DegradIA architecture diagram</title><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6670"/></marker></defs><rect width="1000" height="450" fill="#f7f9fb"/><text x="20" y="40" font-size="22" font-weight="700" fill="#212931" text-anchor="start">DegradIA: from a published model to a tool in use</text>
 <rect x="30" y="80" width="19" height="19" fill="#c2410c"/>
 <rect x="50" y="80" width="19" height="19" fill="#f76707"/>
 <rect x="70" y="80" width="19" height="19" fill="#e8590c"/>
@@ -99,34 +99,34 @@
 <rect x="170" y="260" width="19" height="19" fill="#adb5bd"/>
 <rect x="190" y="260" width="19" height="19" fill="#ced4da"/>
 <rect x="210" y="260" width="19" height="19" fill="#b8c0c8"/>
-<text x="30" y="305" font-size="14" font-weight="700" fill="#212931" text-anchor="start">Malla de 400 × 400 celdas</text>
-<text x="30" y="325" font-size="14" font-weight="400" fill="#5b6670" text-anchor="start">celda de 0,125 µm</text>
-<text x="30" y="345" font-size="14" font-weight="400" fill="#5b6670" text-anchor="start">1 iteración = 10,08 s</text>
-<text x="30" y="365" font-size="13" font-weight="400" fill="#5b6670" text-anchor="start">(esquema ilustrativo)</text>
+<text x="30" y="305" font-size="14" font-weight="700" fill="#212931" text-anchor="start">400 × 400 cell lattice</text>
+<text x="30" y="325" font-size="14" font-weight="400" fill="#5b6670" text-anchor="start">0.125 µm cells</text>
+<text x="30" y="345" font-size="14" font-weight="400" fill="#5b6670" text-anchor="start">1 iteration = 10.08 s</text>
+<text x="30" y="365" font-size="13" font-weight="400" fill="#5b6670" text-anchor="start">(illustrative sketch)</text>
 <rect x="270" y="80" width="220" height="70" rx="8" fill="#eef1f4" stroke="#c9d1d8" stroke-width="1.5"/>
-<text x="380.0" y="110.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Modelo publicado</text>
+<text x="380.0" y="110.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Published model</text>
 <text x="380.0" y="130.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">Materials, 2025</text>
 <rect x="510" y="80" width="220" height="70" rx="8" fill="#eef1f4" stroke="#c9d1d8" stroke-width="1.5"/>
-<text x="620.0" y="110.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Prototipo</text>
-<text x="620.0" y="130.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">en Python 3</text>
+<text x="620.0" y="110.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Python 3</text>
+<text x="620.0" y="130.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">prototype</text>
 <line x1="492" y1="115.0" x2="507" y2="115.0" stroke="#5b6670" stroke-width="2" marker-end="url(#a)"/>
 <rect x="750" y="80" width="220" height="70" rx="8" fill="#e3f6fd" stroke="#18bfef" stroke-width="1.5"/>
-<text x="860.0" y="110.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Motor en Go</text>
-<text x="860.0" y="130.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">concurrente</text>
+<text x="860.0" y="110.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Concurrent</text>
+<text x="860.0" y="130.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">Go engine</text>
 <line x1="732" y1="115.0" x2="747" y2="115.0" stroke="#5b6670" stroke-width="2" marker-end="url(#a)"/>
-<text x="860.0" y="170" font-size="13" font-weight="400" fill="#5b6670" text-anchor="middle">60 000 iteraciones = 168 h</text>
+<text x="860.0" y="170" font-size="13" font-weight="400" fill="#5b6670" text-anchor="middle">60,000 iterations = 168 h</text>
 <path d="M860.0,180 L860.0,195 L380.0,195 L380.0,217" fill="none" stroke="#5b6670" stroke-width="2" marker-end="url(#a)"/>
 <rect x="270" y="220" width="220" height="70" rx="8" fill="#ffffff" stroke="#c9d1d8" stroke-width="1.5"/>
-<text x="380.0" y="250.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">API</text>
-<text x="380.0" y="270.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">de servicios</text>
+<text x="380.0" y="250.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Services</text>
+<text x="380.0" y="270.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">API</text>
 <rect x="510" y="220" width="220" height="70" rx="8" fill="#ffffff" stroke="#c9d1d8" stroke-width="1.5"/>
-<text x="620.0" y="250.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Visualización</text>
-<text x="620.0" y="270.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">web 2D/3D</text>
+<text x="620.0" y="250.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">2D/3D web</text>
+<text x="620.0" y="270.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">visualization</text>
 <line x1="492" y1="255.0" x2="507" y2="255.0" stroke="#5b6670" stroke-width="2" marker-end="url(#a)"/>
 <rect x="750" y="220" width="220" height="70" rx="8" fill="#e6f6ec" stroke="#3aa66a" stroke-width="1.5"/>
-<text x="860.0" y="250.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Validación SEM-EDS</text>
-<text x="860.0" y="270.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">ECM ≈ 2 % · R² = 0,97</text>
+<text x="860.0" y="250.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">SEM-EDS validation</text>
+<text x="860.0" y="270.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">MSE ≈ 2% · R² = 0.97</text>
 <line x1="732" y1="255.0" x2="747" y2="255.0" stroke="#5b6670" stroke-width="2" marker-end="url(#a)"/>
 <rect x="270" y="340" width="700" height="80" rx="8" fill="#212931"/>
-<text x="620" y="373" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">TRL 6 · patente en trámite · de meses de laboratorio a horas</text>
-<text x="620" y="398" font-size="15" font-weight="400" fill="#d5dbe0" text-anchor="middle">En uso en el Lab. de Sales Fundidas del CDEA · origen de Novatherm Analytics</text></svg>
+<text x="620" y="373" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">TRL 6 · patent pending · from months of lab work to hours</text>
+<text x="620" y="398" font-size="15" font-weight="400" fill="#d5dbe0" text-anchor="middle">Used by the CDEA Molten Salt Laboratory · origin of Novatherm Analytics</text></svg>

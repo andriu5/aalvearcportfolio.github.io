@@ -4,13 +4,23 @@
 	html5up.net | @ajlkn
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 -->
-<html>
+<html lang="en">
 	<head>
 		<title>Andrés Portfolio</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			.ds-projects { text-align: left; margin-bottom: 2em; }
+			.ds-projects p { text-align: left; }
+			.ds-projects h3 { margin-bottom: 0.5em; }
+			.ds-projects .image.fit { margin-bottom: 1.25em; }
+			.ds-projects .image.fit img { aspect-ratio: 600 / 408; object-fit: contain; background: #fcfcfb; border: 1px solid #e4e7ea; }
+			.ds-facts { padding-left: 1.1em; margin-bottom: 1em; }
+			.ds-facts li { padding-left: 0.25em; }
+			.ds-tags { font-size: 0.8em; color: #7f888f; margin-bottom: 1.25em; }
+		</style>
 	</head>
 	<body class="is-preload">
 
@@ -48,14 +58,44 @@
 						<!-- Featured Post -->
 						<article class="post featured">
 							<header class="major">
-								<span class="date">October 08, 2022</span>
-								<h2><a href="#">Data Science Projects</a></h2>
-								<p>In this portfolio are presented two Data Science projects: <span><a href="https://github.com/andriu5/EDA-pima-indians">EDA pima indians</a></span> to demonstrate Exploratory Data Analysis, Statistics, Data Visualization, and <span><a href="https://github.com/andriu5/music-recommendation-system"> Music Recommendation System</a></span> to demonstrate advanced knowledge in Applied Data Science.</p>
+								<span class="date">2022 · Data Science</span>
+								<h2>Data Science Projects</h2>
+								<p>Two end-to-end Python projects: an exploratory analysis of a clinical dataset,<br />
+								and a benchmark of six recommendation approaches on the Million Song Dataset.</p>
 							</header>
-							<a href="https://eportfolio.mygreatlearning.com/andr-s-arturo-alvear-cabez-n" class="image main"><img src="images/myDS_Portfolio.png" alt="My Data Science portfolio" /></a>
+							<div class="row gtr-uniform ds-projects">
+								<div class="col-6 col-12-small">
+									<a href="https://github.com/andriu5/EDA-pima-indians" class="image fit"><img src="images/ds_eda_glucose_insulin.png" alt="Scatter plot of insulin against glucose: patients with diabetes concentrate at higher glucose levels" /></a>
+									<h3><a href="https://github.com/andriu5/EDA-pima-indians">Pima Indians Diabetes EDA</a></h3>
+									<p>Exploratory analysis of a clinical dataset to find what separates women with and without diabetes.</p>
+									<ul class="ds-facts">
+										<li><b>768</b> patients, <b>8</b> clinical variables</li>
+										<li>Patients with diabetes cluster at <b>higher glucose</b> levels</li>
+										<li>Strongest correlations: age–pregnancies (<b>0.54</b>) and BMI–skin thickness (<b>0.53</b>)</li>
+									</ul>
+									<p class="ds-tags">pandas · seaborn · descriptive statistics · data visualization</p>
+									<ul class="actions">
+										<li><a href="https://github.com/andriu5/EDA-pima-indians" class="button">View on GitHub</a></li>
+									</ul>
+								</div>
+								<div class="col-6 col-12-small">
+									<a href="https://github.com/andriu5/music-recommendation-system" class="image fit"><img src="images/ds_music_f1.svg" alt="Bar chart of F1 score by model after tuning: user-user collaborative filtering is best at 0.513" /></a>
+									<h3><a href="https://github.com/andriu5/music-recommendation-system">Music Recommendation System</a></h3>
+									<p>Recommends the top 10 songs each user is most likely to play, after benchmarking six approaches.</p>
+									<ul class="ds-facts">
+										<li><b>3,155</b> users, <b>563</b> songs, <b>117,876</b> interactions (filtered from 2 million)</li>
+										<li>Best model: tuned user-user collaborative filtering, <b>F1 = 0.513</b> (precision 0.43, recall 0.64)</li>
+										<li>Content-based TF-IDF model to find songs similar to a given one</li>
+									</ul>
+									<p class="ds-tags">Surprise · collaborative filtering · matrix factorization · GridSearchCV · TF-IDF</p>
+									<ul class="actions">
+										<li><a href="https://github.com/andriu5/music-recommendation-system" class="button">View on GitHub</a></li>
+										<li><a href="https://github.com/andriu5/music-recommendation-system/blob/master/AndresAlvear_Music_RecommendationSystems_Final_Report.pdf" class="button">Final Report (PDF)</a></li>
+									</ul>
+								</div>
+							</div>
 							<ul class="actions special">
-								<li><a href="https://github.com/andriu5/EDA-pima-indians" class="button large">EDA Project</a></li>
-								<li><a href="https://github.com/andriu5/music-recommendation-system" class="button large">Music Recommendation System Project</a></li>
+								<li><a href="https://eportfolio.mygreatlearning.com/andr-s-arturo-alvear-cabez-n" class="button primary">Great Learning e-Portfolio</a></li>
 							</ul>
 						</article>
 
@@ -64,37 +104,37 @@
 							<article>
 								<header>
 									<span class="date">2015 – 2016 · Case study</span>
-									<h2><a href="caso-mini.html">MINI Radio Telescope<br />
+									<h2><a href="case-mini.html">MINI Radio Telescope<br />
 									Digital Spectrometer</a></h2>
-									<p>FPGA back-end that digitally separates the sidebands of an 80–116 GHz receiver: over 40 dB of rejection, double the bandwidth, and first light on the Orion Nebula. (In Spanish.)</p>
+									<p>FPGA back-end that digitally separates the sidebands of an 80–116 GHz receiver: over 40 dB of rejection, double the bandwidth, and first light on the Orion Nebula.</p>
 								</header>
-								<a href="caso-mini.html" class="image fit"><img src="images/mini_first_light.png" alt="First-light spectrum of the Orion Nebula from the MINI telescope" /></a>
+								<a href="case-mini.html" class="image fit"><img src="images/mini_first_light.png" alt="First-light spectrum of the Orion Nebula from the MINI telescope" /></a>
 								<ul class="actions special">
-									<li><a href="caso-mini.html" class="button">Read the Case Study</a></li>
+									<li><a href="case-mini.html" class="button">Read the Case Study</a></li>
 								</ul>
 							</article>
 							<article>
 								<header>
 									<span class="date">2023 – 2026 · Case study</span>
-									<h2><a href="caso-fmeco.html">Formality ECO<br />
+									<h2><a href="case-fmeco.html">Formality ECO<br />
 									Nightly Validation</a></h2>
-									<p>Automated validation of every Formality ECO nightly build at Synopsys, using Python ETL, an HPC farm and an AI agent. Review time per cycle went from a full day to minutes. (In Spanish.)</p>
+									<p>Automated validation of every Formality ECO nightly build at Synopsys, using Python ETL, an HPC farm and an AI agent. Review time per cycle went from a full day to minutes.</p>
 								</header>
-								<a href="caso-fmeco.html" class="image fit"><img src="images/caso_fmeco_flujo.svg" alt="Formality ECO validation pipeline diagram" /></a>
+								<a href="case-fmeco.html" class="image fit"><img src="images/case_fmeco_flow.svg" alt="Formality ECO validation pipeline diagram" /></a>
 								<ul class="actions special">
-									<li><a href="caso-fmeco.html" class="button">Read the Case Study</a></li>
+									<li><a href="case-fmeco.html" class="button">Read the Case Study</a></li>
 								</ul>
 							</article>
 							<article>
 								<header>
 									<span class="date">2025 · Case study</span>
-									<h2><a href="caso-degradia.html">DegradIA<br />
+									<h2><a href="case-degradia.html">DegradIA<br />
 									Corrosion Prediction</a></h2>
-									<p>Go and Python platform that simulates steel corrosion in molten solar salt. Validated against SEM-EDS (R² = 0.97), now used by a research lab, and the seed of Novatherm Analytics. (In Spanish.)</p>
+									<p>Go and Python platform that simulates steel corrosion in molten solar salt. Validated against SEM-EDS (R² = 0.97), now used by a research lab, and the seed of Novatherm Analytics.</p>
 								</header>
-								<a href="caso-degradia.html" class="image fit"><img src="images/caso_degradia_arquitectura.svg" alt="DegradIA architecture diagram" /></a>
+								<a href="case-degradia.html" class="image fit"><img src="images/case_degradia_architecture.svg" alt="DegradIA architecture diagram" /></a>
 								<ul class="actions special">
-									<li><a href="caso-degradia.html" class="button">Read the Case Study</a></li>
+									<li><a href="case-degradia.html" class="button">Read the Case Study</a></li>
 								</ul>
 							</article>
 							<article>
@@ -102,7 +142,7 @@
 									<span class="date">October 19, 2026</span>
 									<h2><a href="radio/index.html">RTL-SDR Radio Station<br />
 									</a></h2>
-									<p>Step-by-step guides (in Spanish) for my RTL-SDR Blog V4L station in Santiago: FM band scans, Meteor weather satellite recordings, and ISDB-Tb digital TV measurements.</p>
+									<p>Step-by-step guides for my RTL-SDR Blog V4L station in Santiago: FM band scans, Meteor weather satellite recordings, and ISDB-Tb digital TV measurements.</p>
 								</header>
 								<a href="radio/index.html" class="image fit"><img src="radio/img/fm_scan.png" alt="FM band power scan" /></a>
 								<ul class="actions special">
@@ -136,11 +176,11 @@
 							<!-- <article>
 									<header>
 										<span class="date">November 17, 2021</span>
-										<h2><a href="#">Carga de Planillas Excel masivas<br />
+										<h2><a href="#">Bulk Excel Spreadsheet Upload<br />
 										</a></h2>
 									</header>
 									<a href="https://github.com/andriu5/carga_planillas_masivas" class="image fit"><img src="images/pic02.jpg" alt="" /></a>
-									<p>Desarrollo de endpoint de carga de planillas masivas, validando todos los aspectos que este necesitaria, columnas necesarias, campos obligatorios (Nombre y Rut), y agregando multithread para el proceso de todos los datos del documento posterior registro.</p>
+									<p>An endpoint for bulk spreadsheet uploads that validates everything the data needs (required columns, mandatory fields such as name and RUT), with multithreading to process every row of the document before saving it.</p>
 									<ul class="actions special">
 										<li><a href="https://github.com/andriu5/carga_planillas_masivas" class="button">View Project</a></li>
 									</ul>

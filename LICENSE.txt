@@ -1,19 +1,19 @@
-Licencias de este repositorio
-=============================
+Licenses in this repository
+===========================
 
-1. Plantilla (diseño, CSS, JavaScript y fuentes en assets/, y la estructura HTML
-   de las páginas): "Massively" de HTML5 UP (html5up.net, AJ @ajlkn), distribuida
-   bajo la licencia Creative Commons Attribution 3.0 Unported, cuyo texto completo
-   está más abajo. La plantilla original fue modificada: contenido propio, páginas
-   nuevas y ajustes menores de estilo.
+1. Template (design, CSS, JavaScript and fonts in assets/, and the HTML
+   structure of the pages): "Massively" by HTML5 UP (html5up.net, AJ @ajlkn),
+   distributed under the Creative Commons Attribution 3.0 Unported license,
+   whose full text is below. The original template has been modified: own
+   content, new pages, and minor style changes.
 
-2. Contenido propio (textos, casos de proyecto, guías de radio/, diagramas y
-   fotografías propias): Copyright (c) 2022-2026 Andrés Alvear. Todos los
-   derechos reservados. No está cubierto por la licencia de la plantilla.
+2. Own content (texts, case studies, radio/ guides, diagrams and original
+   photographs): Copyright (c) 2022-2026 Andrés Alvear. All rights reserved.
+   It is not covered by the template license.
 
-3. Componentes de terceros incluidos con la plantilla mantienen sus propias
-   licencias: Font Awesome, jQuery, Scrollex y Responsive Tools. La foto de la
-   tarjeta NEOs es de NASA en Unsplash.
+3. Third-party components bundled with the template keep their own licenses:
+   Font Awesome, jQuery, Scrollex and Responsive Tools. The NEOs card photo is
+   by NASA on Unsplash.
 
 -------------------------------------------------------------------------------
 

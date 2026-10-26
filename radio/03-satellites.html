@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3. Satellites: predict passes, record automatically and analyze · SDR Radio from Santiago</title>
+<meta name="description" content="predict passes, record automatically with a Windows task, then analyze and decode with SatDump.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="pagina">
+<header class="sitio">
+  <a class="nombre" href="index.html">SDR Radio from Santiago</a>
+  <nav><a href="index.html">Guides</a><a href="../index.html">Portfolio</a></nav>
+</header>
+<main>
+<h1 id="3-satellites-predict-passes-record-automatically-and-analyze">3. Satellites: predict passes, record automatically and analyze</h1>
+<h2 id="which-satellites-can-be-received-2026">Which satellites can be received (2026)</h2>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Satellite</th>
+<th>Frequency</th>
+<th>Signal</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Meteor M2-3</strong></td>
+<td>137.900 MHz (backup 137.100)</td>
+<td>Digital LRPT, ~120 kHz</td>
+<td>Weather images. <strong>The best target</strong></td>
+</tr>
+<tr>
+<td><strong>Meteor M2-4</strong></td>
+<td>137.900 MHz (backup 137.100)</td>
+<td>Digital LRPT, ~120 kHz</td>
+<td>Same as M2-3</td>
+</tr>
+<tr>
+<td>ISS</td>
+<td>145.800 MHz (voice/SSTV), 145.825 (APRS)</td>
+<td>FM</td>
+<td>Voice and SSTV are occasional</td>
+</tr>
+<tr>
+<td>NOAA 15/18/19</td>
+<td>137 MHz</td>
+<td>APT</td>
+<td><strong>Shut down in 2025</strong>. No longer transmitting</td>
+</tr>
+</tbody>
+</table></div>
+<p>LRPT <strong>does not sound like voice</strong>: it is a constant hiss. In SDR#/SDR++ it shows up as a flat
+block about 120 kHz wide that appears during the pass (about 10 minutes).</p>
+<h2 id="step-1-find-out-when-they-pass">Step 1: find out when they pass</h2>
+<pre><code class="language-bash">python tools/pasos.py 24 20
+</code></pre>
+<ul>
+<li><strong>Arguments:</strong> the next <strong>24 hours</strong> and a maximum elevation of at least <strong>20°</strong>. With no
+  arguments it uses 24 h and 20°.</li>
+<li><strong>Orbital data:</strong> it downloads up-to-date TLEs from Celestrak, computes the passes for Santiago
+  (−33.45, −70.66) and shows Chile time (UTC−3).</li>
+<li><strong>Which passes to pick:</strong> <strong>40° of elevation or more</strong>. Below 20° the signal is weak and
+  buildings get in the way.</li>
+</ul>
+<p>Sample output:</p>
+<pre><code>Satélite      Inicio              Máx Fin    Frecuencia
+METEOR-M2 3   Fri 02 22:56:46    70°  23:07  137.900 MHz LRPT
+</code></pre>
+<p>The columns are satellite, start, maximum elevation, end and frequency.</p>
+<h2 id="step-2-prepare-the-antenna">Step 2: prepare the antenna</h2>
+<ol>
+<li>Use the <strong>large elements</strong> of the dipole, extended to about <strong>53.4 cm each</strong>
+   (including the ~2 cm inside the base).</li>
+<li>Open them into a <strong>V at about 120°</strong> and keep them <strong>horizontal</strong>, parallel to the ground.</li>
+<li>Place it <strong>outdoors or in a window with plenty of open sky</strong>, away from the PC, using the 3 m cable.</li>
+<li>Point the arms <strong>east–west</strong>, with the opening of the V facing north or south. A horizontal
+   dipole picks up little off the tips of its arms, and in a polar pass the low parts, where the
+   signal is weakest, arrive from the north and the south. This way they hit the antenna
+   broadside. At the top of the pass, the dipole picks up well in any orientation.</li>
+</ol>
+<h2 id="step-3-schedule-the-automatic-recording">Step 3: schedule the automatic recording</h2>
+<p>In PowerShell, from the project folder. Start 1–2 minutes before the start time given by
+<code>pasos.py</code>, and compute the duration as (end − start) + 3 min:</p>
+<pre><code class="language-powershell">.\tools\programar_paso.ps1 -Nombre meteor-m2-3 -Inicio '2026-10-02 22:55' -Minutos 14
+</code></pre>
+<p>It creates a Windows task under <strong>Task Scheduler → Library → RTL-SDR</strong>. At the scheduled time it:</p>
+<ol>
+<li>Closes SDR#/SDR++ if they are open, normally, without forcing them.</li>
+<li>Keeps Windows from going to sleep while recording.</li>
+<li>Records raw IQ with <code>rtl_sdr</code> through <code>tools\capturar_iq.py</code>: centered at <strong>137.5 MHz</strong>,
+   <strong>2.048 MS/s</strong>, gain <strong>38.6 dB</strong>. The <code>-n</code> option of <code>rtl_sdr</code> is not used, because it never
+   finishes on recordings longer than ~8.7 min; the script copies the exact number of bytes from a
+   pipe. That span covers 137.1 and 137.9 MHz at once, so it works even if the satellite switches
+   frequency. It takes about 0.25 GB per minute (~3.4 GB in 14 min).</li>
+<li>Analyzes the recording (step 4) and writes a log.</li>
+<li>If the recording is at 137 MHz, extracts the 137.9 MHz channel and decodes it with SatDump
+   (step 5) through <code>tools\decodificar_paso.ps1</code>. The images end up in
+   <code>grabaciones\&lt;base&gt;_satdump\MSU-MR\</code>.</li>
+</ol>
+<p>Useful commands:</p>
+<pre><code class="language-powershell">.\tools\programar_paso.ps1 -Listar
+</code></pre>
+<pre><code class="language-powershell">.\tools\programar_paso.ps1 -Borrar 'meteor-m2-3 20261002-2255'
+</code></pre>
+<p>Extra options: <code>-Frecuencia 145.8e6</code> (for the ISS, for example) and <code>-Ganancia 29.7</code>.</p>
+<p><strong>For the task to work:</strong></p>
+<ul>
+<li><strong>The PC must be plugged in.</strong> On mains power, Windows does not sleep and can wake up for the
+  task. On battery it sleeps after 10 minutes and does <strong>not</strong> wake up.</li>
+<li><strong>You must be signed in.</strong> The session can be locked, but not signed out.</li>
+<li><strong>The dongle and the antenna must be connected.</strong></li>
+</ul>
+<h3 id="recording-manually-without-a-scheduled-task">Recording manually, without a scheduled task</h3>
+<pre><code class="language-powershell">.\tools\grabar_paso.ps1 -Nombre meteor-m2-3 -Minutos 14
+</code></pre>
+<h2 id="step-4-check-the-result">Step 4: check the result</h2>
+<p>Everything goes into <code>grabaciones\</code>:</p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>File</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AAAAMMDD_HHMM_meteor-m2-3_137500000Hz_2048000sps.cu8</code></td>
+<td>Raw IQ (unsigned 8-bit)</td>
+</tr>
+<tr>
+<td><code>...log</code></td>
+<td>What happened during the recording</td>
+</tr>
+<tr>
+<td><code>...png</code></td>
+<td>Full waterfall + zoom on 137.1 and 137.9 MHz</td>
+</tr>
+</tbody>
+</table></div>
+<p>In the log and in the PNG you will see something like:</p>
+<pre><code>  137.100 MHz: máx +0.4 dB, 0.0 min &gt; +3 dB -&gt; sin señal clara
+  137.900 MHz: máx +9.8 dB, 7.5 min &gt; +3 dB -&gt; SEÑAL DETECTADA
+</code></pre>
+<p>That is: no clear signal on 137.1 MHz, and a signal detected on 137.9 MHz for 7.5 minutes.
+If the signal was caught, the zoom shows a wide band (about 120 kHz) that lights up for several
+minutes and drifts slightly because of the Doppler effect.</p>
+<p>To analyze a recording again by hand:</p>
+<pre><code class="language-bash">python tools/analizar_iq.py grabaciones/ARCHIVO.cu8 --centro 137.5e6 --sr 2048000
+</code></pre>
+<h2 id="step-4b-optional-review-the-recording-in-an-sdr-program">Step 4b (optional): review the recording in an SDR program</h2>
+<p>Convert the recording, or part of it, to an IQ WAV file:</p>
+<pre><code class="language-bash">python tools/cu8_a_wav.py grabaciones/ARCHIVO.cu8 --desde 0 --hasta 15
+</code></pre>
+<ul>
+<li><strong>What it creates:</strong> <code>grabaciones/SDRSharp_AAAAMMDD_HHMMSSZ_&lt;freq&gt;Hz_IQ.wav</code>. The name follows
+  the SDR# format, with the start time in UTC.</li>
+<li><strong>The limit:</strong> a WAV file cannot exceed 4 GB, which at 2.048 MS/s is ~17 minutes. That is why
+  <code>--desde</code> and <code>--hasta</code> (minutes from the start) select the segment.</li>
+<li><strong>How to open it in SDR#:</strong> Source → <strong>IQ File (*.wav)</strong> → choose the file → Play. It plays
+  back as if it were live. If SDR# does not show the real frequency, set the center by hand
+  (137.5 MHz).</li>
+</ul>
+<h2 id="step-5-get-the-image-with-satdump">Step 5: get the image with SatDump</h2>
+<p>SatDump 1.2.2 (portable version) is in <code>satdump\</code>. It was downloaded from
+<a href="https://github.com/SatDump/SatDump/releases">github.com/SatDump/SatDump/releases</a> and the zip
+was kept in <code>downloads\</code>. No installation needed.</p>
+<p><strong>Automatic:</strong> since 2026-10-20, <code>grabar_paso.ps1</code> (and so the scheduled task) runs 5.1 and 5.2
+by itself after a 137 MHz recording, through <code>tools\decodificar_paso.ps1</code>. If the 72k pipeline
+does not sync (a 0-byte <code>.cadu</code>), it retries with the 80k one in <code>&lt;base&gt;_satdump_80k\</code>. To run
+it by hand on an existing recording:</p>
+<pre><code class="language-powershell">.\tools\decodificar_paso.ps1 -Archivo grabaciones\ARCHIVO.cu8
+</code></pre>
+<p>With <code>-Extraer 137.1e6</code> it uses the backup frequency. The next steps explain what it does inside.</p>
+<h3 id="51-extract-the-satellite-channel">5.1 Extract the satellite channel</h3>
+<p>The recording covers 2 MHz centered at 137.5 MHz, and the Meteor is 400 kHz higher, at
+137.9 MHz. SatDump expects the signal centered, so it is first shifted to 0 Hz, filtered
+and decimated to 512 kS/s:</p>
+<pre><code class="language-bash">python tools/analizar_iq.py grabaciones/ARCHIVO.cu8 --centro 137.5e6 --sr 2048000 --extraer 137.9e6
+</code></pre>
+<ul>
+<li><strong>What it creates:</strong> the usual waterfall and <code>ARCHIVO_137.900MHz_512k.cs16</code>, in 16-bit IQ
+  format, a quarter of the original size.</li>
+<li><strong>Check the verdict before going on:</strong> if it says "sin señal clara" (no clear signal) on
+  137.9, SatDump will most likely get nothing. If the satellite used the backup frequency,
+  repeat with <code>--extraer 137.1e6</code>.</li>
+</ul>
+<h3 id="52-decode-from-the-command-line">5.2 Decode from the command line</h3>
+<pre><code class="language-bash">satdump/satdump.exe meteor_m2-x_lrpt baseband grabaciones/ARCHIVO_137.900MHz_512k.cs16 grabaciones/ARCHIVO_satdump --samplerate 512000 --baseband_format cs16
+</code></pre>
+<ul>
+<li><code>meteor_m2-x_lrpt</code> is the normal mode for Meteor M2-3 and M2-4 (LRPT 72k, OQPSK). If it
+  does not decode, try <code>meteor_m2-x_lrpt_80k</code>.</li>
+<li>While running, it shows the demodulator status. <strong><code>SYNCED</code> and a low "Viterbi BER"</strong>
+  mean it is reading data. If it only says <code>NOSYNC</code>, the signal is not strong enough.</li>
+<li>The images end up in <code>grabaciones/ARCHIVO_satdump/MSU-MR/</code>.</li>
+</ul>
+<h3 id="52-alternative-decode-with-the-graphical-interface">5.2 (alternative) Decode with the graphical interface</h3>
+<ol>
+<li>Open <code>satdump\satdump-ui.exe</code> → <strong>Offline processing</strong> tab.</li>
+<li><strong>Pipeline:</strong> <em>METEOR M2-x LRPT 72k</em>.</li>
+<li><strong>Input level:</strong> <em>baseband</em>. <strong>Baseband format:</strong> <code>cs16</code>. <strong>Samplerate:</strong> <code>512000</code>.</li>
+<li><strong>Input file:</strong> the <code>.cs16</code>. <strong>Output directory:</strong> a new folder.</li>
+<li>Click <strong>Start</strong>. The constellations and the sync status are shown live.</li>
+</ol>
+<h3 id="53-which-images-you-get">5.3 Which images you get</h3>
+<p>The Meteor's MSU-MR sends 3 channels over LRPT. <strong>By day</strong> they are usually 2 visible and 1
+infrared, and <strong>at night</strong> only infrared.</p>
+<p>The names in this table are indicative and will be confirmed with the first successful
+decode. When there is no sync, SatDump finishes without an error but leaves
+<code>meteor_m2-x_lrpt.cadu</code> at <strong>0 bytes</strong> and <code>MSU-MR/</code> with only <code>product.cbor</code>, without any PNG.</p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>File</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MSU-MR-1.png</code>, <code>-2</code>, <code>-3</code>...</td>
+<td>Each channel separately, in black and white</td>
+</tr>
+<tr>
+<td><code>rgb_MSU-MR_221_False_Color.png</code> or similar</td>
+<td><strong>Color composite.</strong> Only produced with visible channels, that is, by day</td>
+</tr>
+<tr>
+<td><code>..._Thermal_Infrared.png</code></td>
+<td>Thermal infrared, with clouds in white. Produced by day and at night</td>
+</tr>
+<tr>
+<td><code>..._projected.png</code> (if present)</td>
+<td>The image projected onto a map</td>
+</tr>
+</tbody>
+</table></div>
+<p>The image is a strip ~2,800 km wide along the satellite's ground track. Its length depends on
+how many minutes sync was held: a 40° pass gives about 7–8 useful minutes, and a pass of 70° or
+more gives about 10–12.</p>
+<p>If the image has black lines from signal dropouts, add <code>--fill_missing</code> to the command-line
+command.</p>
+<h2 id="common-problems">Common problems</h2>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Likely cause / fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The log says <code>usb_open error -3</code></td>
+<td>SDR#/SDR++ was still open. Close it before the pass</td>
+</tr>
+<tr>
+<td>No recording was created</td>
+<td>The PC was asleep or on battery. Check <strong>Task Scheduler → RTL-SDR → History</strong></td>
+</tr>
+<tr>
+<td>"sin señal clara" (no clear signal) on both frequencies</td>
+<td>Antenna blocked or vertical, low pass (&lt; 30°), or the satellite was off. Try a higher pass</td>
+</tr>
+<tr>
+<td>Stripes or steps across the whole waterfall</td>
+<td>Overload from strong FM. Schedule with <code>-Ganancia 29.7</code></td>
+</tr>
+</tbody>
+</table></div>
+<nav class="pasos"><a href="02-fm-sweep.html">← Wideband sweeps with rtl_power</a><a href="04-digital-tv.html">Digital TV →</a></nav>
+</main>
+<footer>Andrés Alvear · Updated 2026-10-24 · No cookies or JavaScript</footer>
+</div>
+</body>
+</html>

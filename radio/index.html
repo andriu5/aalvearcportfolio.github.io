@@ -1,36 +1,39 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Radio SDR desde Santiago</title>
-<meta name="description" content="Guías de RTL-SDR: instalación, FM, satélites Meteor y TV digital desde Santiago de Chile.">
-<link rel="stylesheet" href="estilo.css">
+<title>SDR Radio from Santiago</title>
+<meta name="description" content="RTL-SDR guides: setup, FM, Meteor satellites and digital TV from Santiago, Chile.">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="pagina">
 <header class="sitio">
-  <a class="nombre" href="index.html">Radio SDR desde Santiago</a>
-  <nav><a href="index.html">Guías</a><a href="../index.html">Portafolio</a></nav>
+  <a class="nombre" href="index.html">SDR Radio from Santiago</a>
+  <nav><a href="index.html">Guides</a><a href="../index.html">Portfolio</a></nav>
 </header>
 <main>
-<h1>Radio SDR desde Santiago</h1>
-<p>Notas de mi estación de radio definida por software: un dongle <strong>RTL-SDR Blog V4L</strong>
-con una antena dipolo, en Windows, desde Santiago de Chile. Las escribo para ordenar lo que voy
-probando: instalar los drivers, recorrer la banda de FM, grabar satélites meteorológicos Meteor
-y medir la TV digital ISDB-Tb.</p>
-<p class="tenue">Todo está escrito paso a paso, con los comandos exactos que usé y lo que salió,
-incluidos los intentos que no funcionaron.</p>
-<h2>Guías</h2>
+<h1>SDR Radio from Santiago</h1>
+<p>Notes from my software-defined radio station: an <strong>RTL-SDR Blog V4L</strong> dongle
+with a dipole antenna, on Windows, in Santiago, Chile. I write them to keep track of what I try:
+installing the drivers, scanning the FM band, recording Meteor weather satellites, and measuring
+ISDB-Tb digital TV.</p>
+<p class="tenue">Everything is written step by step, with the exact commands I used and what came out,
+including the attempts that did not work. Script names, options and console output are kept exactly
+as they appear in my tools, which use Spanish identifiers.</p>
+<h2>Guides</h2>
 <ul class="guias">
-<li><a href="01-instalacion.html">1. Instalación y primeras pruebas</a><p>drivers, Zadig, SDR#, SDR++, <code>rtl_test</code>, antena.</p></li>
-<li><a href="02-barrido-fm.html">2. Barrido de banda ancha con rtl_power</a><p>ejemplo con la banda FM y cómo evitar la saturación.</p></li>
-<li><a href="03-satelites.html">3. Satélites</a><p>predecir pasos, grabar automáticamente con una tarea de Windows, analizar y decodificar con SatDump.</p></li>
-<li><a href="04-tv-digital.html">4. TV digital</a><p>mapear los canales ISDB-Tb de UHF con <code>rtl_power</code> y <code>canales_tv.py</code>.</p></li>
-<li><a href="05-isdbt-grabacion.html">5. Grabación ISDB-Tb para FPGA</a><p>grabación IQ validada del canal 29, sus parámetros OFDM (modo, guarda, CFO, SCO) y vectores para testbench HDL.</p></li>
+<li><a href="01-installation.html">1. Setup and first tests</a><p>drivers, Zadig, SDR#, SDR++, <code>rtl_test</code>, antenna.</p></li>
+<li><a href="02-fm-sweep.html">2. Wideband sweeps with rtl_power</a><p>an FM band example and how to avoid overload.</p></li>
+<li><a href="03-satellites.html">3. Satellites</a><p>predict passes, record automatically with a Windows task, then analyze and decode with SatDump.</p></li>
+<li><a href="04-digital-tv.html">4. Digital TV</a><p>map the UHF ISDB-Tb channels with <code>rtl_power</code> and <code>canales_tv.py</code>.</p></li>
+<li><a href="05-isdbt-recording.html">5. ISDB-Tb recording for FPGA</a><p>a validated IQ recording of channel 29, its OFDM parameters (mode, guard interval, CFO, SCO) and HDL testbench vectors.</p></li>
+<li><a href="06-home-passes-lna.html">6. Home passes and the LNA</a><p>a pass predictor for Viña del Mar checked against n2yo.com, and getting a 137 MHz filter + LNA working (power and gain).</p></li>
+<li><a href="07-iss-sstv.html">7. SSTV images from the ISS</a><p>ARISS Series 34 on 437.550 MHz, a Python toolchain that removes the ±10 kHz Doppler shift and decodes Robot36, and two slides received from the Concón dunes.</p></li>
 </ul>
 </main>
-<footer>Andrés Alvear · Actualizado el 2026-10-19 · Sin cookies ni JavaScript</footer>
+<footer>Andrés Alvear · Updated 2026-10-24 · No cookies or JavaScript</footer>
 </div>
 </body>
 </html>

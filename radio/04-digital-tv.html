@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4. Digital TV (ISDB-Tb): mapping the UHF channels · SDR Radio from Santiago</title>
+<meta name="description" content="map the UHF ISDB-Tb channels with rtlpower and canalestv.py.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="pagina">
+<header class="sitio">
+  <a class="nombre" href="index.html">SDR Radio from Santiago</a>
+  <nav><a href="index.html">Guides</a><a href="../index.html">Portfolio</a></nav>
+</header>
+<main>
+<h1 id="4-digital-tv-isdb-tb-mapping-the-uhf-channels">4. Digital TV (ISDB-Tb): mapping the UHF channels</h1>
+<h2 id="what-you-can-and-cannot-do">What you can and cannot do</h2>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th></th>
+<th>Possible with the V4L?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>See the channels in the spectrum and measure their strength</td>
+<td><strong>Yes</strong></td>
+</tr>
+<tr>
+<td>Find out which physical channels are active in your area</td>
+<td><strong>Yes</strong> (this procedure)</td>
+</tr>
+<tr>
+<td>Watch the picture</td>
+<td><strong>No</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Why you cannot watch the picture:</strong></p>
+<ul>
+<li><strong>Bandwidth.</strong> Chile uses <strong>ISDB-Tb</strong>, with 6 MHz channels and a 5.57 MHz signal.
+  The V4L sees at most about 2.4 MHz at a time.</li>
+<li><strong>The chip.</strong> The RTL2832U's built-in TV mode is DVB-T, the European standard, which is
+  incompatible with ISDB-Tb. That mode was also replaced by WinUSB when the SDR driver was installed.</li>
+<li><strong>The practical alternative:</strong> to watch TV on the PC, use a USB ISDB-T tuner.</li>
+</ul>
+<p><strong>What a digital channel looks like in SDR#:</strong> a <strong>flat plateau</strong> with very sharp edges and
+small peaks on top (the TMCC/AC pilot carriers).</p>
+<h2 id="the-channel-formula">The channel formula</h2>
+<p>UHF channel <em>n</em> (14 to 51) occupies:</p>
+<pre><code>start = 470 + 6·(n − 14) MHz        end = start + 6 MHz
+signal center = start + 3 + 1/7 MHz   (ISDB-Tb is offset by +143 kHz)
+</code></pre>
+<p>Example, channel 24: it spans 530 to 536 MHz and the signal is centered at 533.143 MHz.
+The <strong>1seg</strong> segment (the mobile version, about 430 kHz wide) sits right at that center.</p>
+<h2 id="step-1-close-sdr-and-sdr">Step 1: close SDR# and SDR++</h2>
+<h2 id="step-2-sweep-from-470-to-700-mhz-2-minutes">Step 2: sweep from 470 to 700 MHz (2 minutes)</h2>
+<p>From the project folder:</p>
+<pre><code class="language-bash">drivers/rtlsdrblog-V1.4.0/x64/rtl_power.exe -f 470M:700M:50k -g 12.5 -c 25% -i 10 -e 2m scans/tv_uhf.csv
+</code></pre>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-f 470M:700M:50k</code></td>
+<td>The whole UHF TV band (channels 14–51), with 50 kHz resolution</td>
+</tr>
+<tr>
+<td><code>-g 12.5</code></td>
+<td>Moderate gain. The channels from Santiago's hilltop transmitters arrive strong. If the noise floor shows steps, go down to <code>-g 8.7</code></td>
+</tr>
+<tr>
+<td><code>-c 25%</code></td>
+<td>Discards the edges of each hop</td>
+</tr>
+<tr>
+<td><code>-e 2m</code></td>
+<td>About 12 full sweeps, enough to average</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="step-3-detect-the-channels">Step 3: detect the channels</h2>
+<pre><code class="language-bash">python tools/canales_tv.py scans/tv_uhf.csv 6
+</code></pre>
+<ul>
+<li><strong>What it does:</strong> checks channels 14 to 51 and marks a channel as active when its central
+  power is more than <strong>6 dB</strong> above the noise floor (the last argument).</li>
+<li><strong>What it creates:</strong> the plot <code>scans/tv_uhf_canales.png</code> (active channels in green) and a table.
+  Add <code>--en</code> to get a copy with English labels, <code>scans/tv_uhf_canales_en.png</code>.</li>
+<li><strong>The "Forma" (shape) column:</strong> tells whether the channel has the flat plateau with sharp
+  edges typical of ISDB-Tb, or is irregular.</li>
+</ul>
+<h2 id="result-from-2026-10-02-1910-santiago-indoor-dipole-125-db-gain">Result from 2026-10-02, 19:10 (Santiago, indoor dipole, 12.5 dB gain)</h2>
+<p><img alt="UHF channels" src="img/tv_uhf_canales_en.png" /></p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Channel</th>
+<th>MHz</th>
+<th>Above noise</th>
+<th>Shape</th>
+<th>Comment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>29</strong></td>
+<td>560–566</td>
+<td><strong>+37.7 dB</strong></td>
+<td>plateau</td>
+<td>The strongest</td>
+</tr>
+<tr>
+<td><strong>24</strong></td>
+<td>530–536</td>
+<td>+34.8 dB</td>
+<td>plateau</td>
+<td>The one I saw in SDR# (edge at 530.36 MHz)</td>
+</tr>
+<tr>
+<td><strong>25</strong></td>
+<td>536–542</td>
+<td>+34.8 dB</td>
+<td>plateau</td>
+<td>Right next to 24</td>
+</tr>
+<tr>
+<td><strong>28</strong></td>
+<td>554–560</td>
+<td>+29.8 dB</td>
+<td>plateau</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>27</strong></td>
+<td>548–554</td>
+<td>+28.1 dB</td>
+<td>plateau</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>38</strong></td>
+<td>614–620</td>
+<td>+23.0 dB</td>
+<td>plateau</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>46</strong></td>
+<td>662–668</td>
+<td>+22.9 dB</td>
+<td>plateau</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>50</strong></td>
+<td>686–692</td>
+<td>+18.0 dB</td>
+<td>tilted plateau</td>
+<td>The tilt is usually caused by multipath: reflections off buildings and hills</td>
+</tr>
+<tr>
+<td><strong>40</strong></td>
+<td>626–632</td>
+<td>+13.3 dB</td>
+<td>plateau</td>
+<td></td>
+</tr>
+<tr>
+<td>33</td>
+<td>584–590</td>
+<td>+7.9 dB</td>
+<td>irregular</td>
+<td>Weak and changing. It may be a distant channel with fading, or a different kind of signal</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>How to read the plot:</strong></p>
+<ul>
+<li><strong>The thin peaks</strong> right next to the strong channels (for example at 528, 547 and 567 MHz)
+  <strong>are not channels</strong>. They are sweep artifacts: images and hop edges from <code>rtl_power</code> when a
+  very strong signal is nearby.</li>
+<li><strong>The physical channel number</strong> (24, 29...) is <strong>not</strong> the virtual number the TV shows (for
+  example 7.1 or 13.1). To find out which station it is, check the TV's signal information
+  menu, which usually shows the physical UHF channel.</li>
+</ul>
+<h2 id="step-4-optional-look-at-a-channel-in-an-sdr-program">Step 4 (optional): look at a channel in an SDR program</h2>
+<ol>
+<li>Tune to the <strong>signal center</strong>: start + 3.143 MHz. For example, <strong>563.143 MHz</strong> for channel 29.</li>
+<li>Set the <strong>Sample Rate to 2.4 MSPS</strong> and <strong>RF Gain to 0–10 dB</strong>. Strong channels overload easily.</li>
+<li>You will see the central part of the plateau. To see an edge, shift the frequency by about ±2.5 MHz.</li>
+</ol>
+<h2 id="repeat-it-to-compare">Repeat it to compare</h2>
+<ul>
+<li><strong>A different antenna position:</strong> save each sweep under a different name, for example
+  <code>scans/tv_ventana.csv</code> (window) or <code>scans/tv_exterior.csv</code> (outdoors). That way you can
+  compare how many dB you gain.</li>
+<li><strong>VHF channels (7–13, 174–216 MHz):</strong> change the range to <code>-f 174M:216M:50k</code>. The automatic
+  table only covers UHF, but the <code>graficar_power.py</code> plot works the same.</li>
+</ul>
+<nav class="pasos"><a href="03-satellites.html">← Satellites</a><a href="05-isdbt-recording.html">ISDB-Tb recording for FPGA →</a></nav>
+</main>
+<footer>Andrés Alvear · Updated 2026-10-24 · No cookies or JavaScript</footer>
+</div>
+</body>
+</html>

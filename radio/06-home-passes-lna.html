@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>6. Meteor M2-3 passes from home and getting an LNA working · SDR Radio from Santiago</title>
+<meta name="description" content="a pass predictor for Viña del Mar checked against n2yo.com, and getting a 137 MHz filter + LNA working (power and gain).">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="pagina">
+<header class="sitio">
+  <a class="nombre" href="index.html">SDR Radio from Santiago</a>
+  <nav><a href="index.html">Guides</a><a href="../index.html">Portfolio</a></nav>
+</header>
+<main>
+<h1 id="6-meteor-m2-3-passes-from-home-and-getting-an-lna-working">6. Meteor M2-3 passes from home and getting an LNA working</h1>
+<p>Log for 2026-10-20. I moved the station to a new home near Viña del Mar, wrote a small pass
+predictor for that location, checked it against n2yo.com, and added a filter + LNA module in
+front of the dongle. The predictor matched n2yo to within a few hundredths of a degree. The LNA
+took two attempts: powered from the bias tee it did nothing, and powered from USB it added about
+33 dB, which forced me to lower the dongle's gain from 38.6 dB to about 16.6 dB.</p>
+<h2 id="setup">Setup</h2>
+<p><img alt="Setup: laptop, RTL-SDR Blog V4L, LNA and the dipole on the window railing" src="img/20261020_setup_lna.jpg" /></p>
+<p>Signal chain: <strong>laptop → RTL-SDR Blog V4L → filter + LNA → coax → dipole on the window
+railing</strong>. The LNA sits directly on the dongle's SMA port.</p>
+<p><img alt="The LNA board: antenna on RFin, dongle on RFout, USB-C power and its blue LED on" src="img/20261020_lna_usb.jpg" /></p>
+<p>At first I assumed the board was a Nooelec SAWbird+ NOAA, because I had its datasheet in the
+project (41 dB of gain and a 2.6 MHz SAW filter centered on 137.5 MHz). The silkscreen says
+<strong>"137/140M Filter+LNA"</strong>: a different, generic module with <strong>RFin</strong> (antenna), <strong>RFout</strong>
+(dongle) and a USB-C power input. The measurements below show it behaves quite differently
+from the SAWbird.</p>
+<h2 id="predicting-passes-for-my-location">Predicting passes for my location</h2>
+<p><code>pasos.py</code> (guide 3) computes for Santiago. For the new location I wrote
+<code>tools/predict_satellites_home_passes.py</code>. It reads a TLE file, uses
+<a href="https://rhodesmill.org/skyfield/">Skyfield</a> to find every pass above 10° in the next 3 days,
+and prints the times in Chile's summer time (UTC−3).</p>
+<pre><code class="language-python">from skyfield.api import load, wgs84, EarthSatellite
+from datetime import timedelta, timezone
+import sys
+
+l = open(sys.argv[1]).read().strip().splitlines()
+ts = load.timescale()
+sat = EarthSatellite(l[1], l[2], l[0].strip(), ts)
+obs = wgs84.latlon(-33.02, -71.55, 20)  # home, rounded to ~1 km for this page
+tz = timezone(timedelta(hours=-3))  # Chile horario de verano (CLST, UTC-3) desde sep 2026
+t0 = ts.now(); t1 = ts.tt_jd(t0.tt + 3)
+t, e = sat.find_events(obs, t0, t1, altitude_degrees=10)
+cur = {}
+
+for ti, ev in zip(t, e):
+    alt, az, _ = (sat - obs).at(ti).altaz()
+    cur[ev] = (ti.utc_datetime().astimezone(tz), az.degrees, alt.degrees)
+    if ev == 2 and 0 in cur and 1 in cur:
+        r, c, s = cur[0], cur[1], cur[2]
+        dur = (s[0]-r[0]).seconds
+        print(f&quot;{r[0]:%a %d-%m} {r[0]:%H:%M}-{s[0]:%H:%M}  max {c[0]:%H:%M} elev {c[2]:4.0f}°  az {r[1]:3.0f}°→{s[1]:3.0f}°  dur {dur//60}m{dur%60:02d}s&quot;)
+        cur = {}
+</code></pre>
+<p>Usage, from the project folder. First download a fresh TLE from Celestrak (57166 is
+Meteor M2-3, 59051 is Meteor M2-4), then run the script:</p>
+<pre><code class="language-bash">curl -s &quot;https://celestrak.org/NORAD/elements/gp.php?CATNR=57166&amp;FORMAT=TLE&quot; -o tools/tle/m23.tle
+</code></pre>
+<pre><code class="language-bash">PYTHONIOENCODING=utf-8 tools/venv/Scripts/python tools/predict_satellites_home_passes.py tools/tle/m23.tle
+</code></pre>
+<p><code>PYTHONIOENCODING=utf-8</code> avoids a Windows console error when printing <code>°</code> and <code>→</code>.</p>
+<h3 id="result-meteor-m2-3-2023-october-2026">Result: Meteor M2-3, 20–23 October 2026</h3>
+<p>TLE epoch 26293.305 (20 October, 07:20 UTC). Passes above 10°, local time (UTC−3):</p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Day</th>
+<th>Start – End</th>
+<th>Max</th>
+<th>Max elev.</th>
+<th>Azimuth (rise → set)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tue 20</strong></td>
+<td><strong>22:38 – 22:48</strong></td>
+<td>22:43</td>
+<td><strong>43°</strong></td>
+<td>152° → 10°</td>
+</tr>
+<tr>
+<td>Wed 21</td>
+<td>00:19 – 00:27</td>
+<td>00:23</td>
+<td>20°</td>
+<td>201° → 292°</td>
+</tr>
+<tr>
+<td>Wed 21</td>
+<td>09:55 – 10:05</td>
+<td>10:00</td>
+<td><strong>44°</strong></td>
+<td>37° → 179°</td>
+</tr>
+<tr>
+<td>Wed 21</td>
+<td>11:36 – 11:43</td>
+<td>11:40</td>
+<td>18°</td>
+<td>317° → 231°</td>
+</tr>
+<tr>
+<td>Wed 21</td>
+<td>22:16 – 22:24</td>
+<td>22:20</td>
+<td>25°</td>
+<td>139° → 29°</td>
+</tr>
+<tr>
+<td>Wed 21</td>
+<td>23:55 – 00:05</td>
+<td>00:00</td>
+<td>33°</td>
+<td>188° → 312°</td>
+</tr>
+<tr>
+<td>Thu 22</td>
+<td>09:32 – 09:41</td>
+<td>09:37</td>
+<td>27°</td>
+<td>56° → 167°</td>
+</tr>
+<tr>
+<td>Thu 22</td>
+<td>11:12 – 11:21</td>
+<td>11:16</td>
+<td>31°</td>
+<td>339° → 215°</td>
+</tr>
+<tr>
+<td>Thu 22</td>
+<td>21:54 – 21:59</td>
+<td>21:57</td>
+<td>15°</td>
+<td>120° → 54°</td>
+</tr>
+<tr>
+<td><strong>Thu 22</strong></td>
+<td><strong>23:32 – 23:42</strong></td>
+<td>23:37</td>
+<td><strong>56°</strong></td>
+<td>177° → 330°</td>
+</tr>
+<tr>
+<td>Fri 23</td>
+<td>09:11 – 09:17</td>
+<td>09:14</td>
+<td>16°</td>
+<td>78° → 152°</td>
+</tr>
+<tr>
+<td><strong>Fri 23</strong></td>
+<td><strong>10:48 – 10:58</strong></td>
+<td>10:53</td>
+<td><strong>54°</strong></td>
+<td>357° → 203°</td>
+</tr>
+</tbody>
+</table></div>
+<p>The best passes for LRPT reception are the ones above about 40°. Morning passes are in daylight
+(visible channels); evening ones only give infrared.</p>
+<h2 id="checking-against-n2yocom">Checking against n2yo.com</h2>
+<p>n2yo.com showed Meteor M2-3 heading toward South America that morning, so I compared two of
+its screenshots with Skyfield at the same instants. n2yo places the observer from the IP address,
+which resolves to Santiago (−33.43, −70.57), so for the check I used that same point.</p>
+<p><img alt="n2yo.com at 11:48: Meteor M2-3 over the Caribbean, still 21.6° below the horizon" src="img/20261020_n2yo_meteor-m2-3_1148.png" /></p>
+<p><img alt="n2yo.com at 12:09: the satellite setting in the southwest at +0.3°" src="img/20261020_n2yo_meteor-m2-3_1209.png" /></p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>n2yo.com</th>
+<th>Skyfield (same TLE day)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sub-satellite point at 14:48:59 UTC</td>
+<td>21.67° N, −81.97°</td>
+<td>21.73° N, −81.96°</td>
+</tr>
+<tr>
+<td>Elevation at 14:48:59 UTC</td>
+<td>−21.6°</td>
+<td>−21.7°</td>
+</tr>
+<tr>
+<td>Sub-satellite point at 15:09:13 UTC</td>
+<td>−49.61°, −100.63°</td>
+<td>−49.55°, −100.60°</td>
+</tr>
+<tr>
+<td>Altitude at 15:09:13 UTC</td>
+<td>830.24 km</td>
+<td>830.2 km</td>
+</tr>
+<tr>
+<td>Elevation / azimuth at 15:09:13 UTC</td>
+<td>+0.3° / 224.9°</td>
+<td>+0.4° / 225.0°</td>
+</tr>
+</tbody>
+</table></div>
+<p>The two agree to within 0.06° in position and 0.3° in elevation.</p>
+<h3 id="the-pass-my-table-missed">The pass my table "missed"</h3>
+<p>That pass did not appear in my table, because it peaks below the 10° cut-off. With the
+threshold lowered to 0°:</p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Observer</th>
+<th>Rises</th>
+<th>Max</th>
+<th>Max elev.</th>
+<th>Sets</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Home (Viña del Mar)</td>
+<td>11:58:10, az 320°</td>
+<td>12:03:47, az 271°</td>
+<td><strong>9.8°</strong></td>
+<td>12:09:29, az 222°</td>
+</tr>
+<tr>
+<td>n2yo IP location (Santiago)</td>
+<td>11:58:31, az 316°</td>
+<td>12:03:54, az 270°</td>
+<td>8.7°</td>
+<td>12:09:22, az 224°</td>
+</tr>
+</tbody>
+</table></div>
+<p>The ground track runs over the Pacific, about 2,400 km away at closest approach. It is a poor
+pass for reception, but it was happening right then, so I used it to test the LNA.</p>
+<h2 id="lna-test">LNA test</h2>
+<h3 id="attempt-1-power-from-the-bias-tee">Attempt 1: power from the bias tee</h3>
+<h4 id="recording-the-low-pass">Recording the low pass</h4>
+<p>I turned on the dongle's bias tee with <code>rtl_biast -b 1</code>, with no USB cable on the board, and
+recorded 8 minutes of raw IQ at 137.5 MHz, 2.048 MS/s and 29.7 dB of gain (lower than the
+usual 38.6 dB, to leave room for the LNA):</p>
+<pre><code class="language-bash">python tools/capturar_iq.py grabaciones/20261020_1201_meteor-m2-3_lna_137500000Hz_2048000sps.cu8 --frecuencia 137.5e6 --sr 2048000 --ganancia 29.7 --segundos 480
+</code></pre>
+<p><img alt="Waterfall of the 8-minute recording: no Meteor signal at 137.1 or 137.9 MHz" src="img/20261020_1201_meteor-m2-3_lna_waterfall.jpg" /></p>
+<p>There was no signal at 137.9 MHz, which is expected at 9.8°. What gave the problem away was the
+raw sample level:</p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Recording</th>
+<th>RTL-SDR gain</th>
+<th>LNA</th>
+<th>Sample std. dev. (8-bit levels)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Meteor M2-3, 2026-10-02</td>
+<td>38.6 dB</td>
+<td>none</td>
+<td>7.8</td>
+</tr>
+<tr>
+<td>Meteor M2-4, 2026-10-03</td>
+<td>38.6 dB</td>
+<td>none</td>
+<td>8.5</td>
+</tr>
+<tr>
+<td><strong>This test, 2026-10-20</strong></td>
+<td>29.7 dB</td>
+<td>bias tee on</td>
+<td><strong>0.97</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>9 dB less gain on the dongle would explain dropping to about 3, not to 1. With a working LNA the
+level should have gone far above the earlier recordings: the dongle was mostly seeing its own noise.</p>
+<h4 id="bias-tee-off-vs-on">Bias tee off vs on</h4>
+<p><code>rtl_power</code> has a <code>-T</code> option that turns the bias tee on while it measures, so I ran the same
+134–141 MHz sweep twice, once without and once with it, plus an FM sweep with the bias tee on:</p>
+<pre><code class="language-bash">drivers/rtlsdrblog-V1.4.0/x64/rtl_power.exe -f 134M:141M:10k -i 2 -e 8 -g 29.7 scans/lna_off.csv
+</code></pre>
+<pre><code class="language-bash">drivers/rtlsdrblog-V1.4.0/x64/rtl_power.exe -f 134M:141M:10k -i 2 -e 8 -g 29.7 -T scans/lna_on.csv
+</code></pre>
+<pre><code class="language-bash">drivers/rtlsdrblog-V1.4.0/x64/rtl_power.exe -f 88M:108M:20k -i 1 -e 3 -g 29.7 -T scans/lna_fm_check.csv
+</code></pre>
+<pre><code class="language-bash">python tools/comparar_lna.py scans/lna_off.csv scans/lna_on.csv scans/lna_fm_check.csv --en
+</code></pre>
+<p><img alt="Bias tee off and on give identical sweeps" src="img/lna_prueba_en.png" /></p>
+<p>The two 134–141 MHz curves sit on top of each other (−36.1 and −36.2 dB in the 137 MHz band):
+the bias tee was not powering the board. The shaded band is the SAWbird passband I expected at
+the time. The dips at 136.3 and 138.7 MHz are the edges of <code>rtl_power</code>'s 2.33 MHz hops, not a
+filter. I turned the bias tee off again with <code>rtl_biast -b 0</code>.</p>
+<h3 id="attempt-2-power-from-usb">Attempt 2: power from USB</h3>
+<p>I connected a USB-A to USB-C cable to the board, and its blue LED lit up. The bias tee stays
+<strong>off</strong>: the board must not get power from two sources at once.</p>
+<p>The same sweep at the same 29.7 dB of gain jumped from <strong>−36.1 to −0.7 dB</strong> in the 137 MHz band.
+That is about 35 dB more: the LNA was now amplifying, and the dongle was saturating. To see the
+real shape of the filter, I swept 120–160 MHz and the FM band with the dongle's gain at 0 and 8.7 dB:</p>
+<pre><code class="language-bash">drivers/rtlsdrblog-V1.4.0/x64/rtl_power.exe -f 120M:160M:20k -i 2 -e 6 -g 8.7 scans/lna_usb_120-160_g8.7.csv
+</code></pre>
+<pre><code class="language-bash">drivers/rtlsdrblog-V1.4.0/x64/rtl_power.exe -f 88M:108M:20k -i 1 -e 3 -g 0 scans/lna_usb_fm_g0.csv
+</code></pre>
+<pre><code class="language-bash">python tools/superponer_power.py scans/lna_usb_banda_en.png &quot;120–160 MHz with the LNA powered by USB&quot; scans/lna_usb_120-160_g0.csv &quot;RTL-SDR gain 0 dB&quot; scans/lna_usb_120-160_g8.7.csv &quot;RTL-SDR gain 8.7 dB&quot; --en
+</code></pre>
+<p><img alt="120–160 MHz with the LNA on: a broad passband and strong signals at 139.5–144 and 148.5 MHz" src="img/lna_usb_banda_en.png" /></p>
+<p><img alt="FM band: with the LNA on and 0 dB of gain, FM is as strong as with the LNA off and 29.7 dB" src="img/lna_usb_fm_en.png" /></p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>SAWbird+ NOAA (what I expected)</th>
+<th>This board (measured)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Passband</td>
+<td>2.6 MHz around 137.5 MHz</td>
+<td>Broad: the noise floor rises from about 134 to 150 MHz</td>
+</tr>
+<tr>
+<td>Out-of-band signals</td>
+<td>Strongly rejected</td>
+<td>Strong signals at 139.5–144 MHz and 148.5 MHz come through</td>
+</tr>
+<tr>
+<td>FM band (88–108 MHz)</td>
+<td>Almost fully blocked</td>
+<td>With the LNA on and the dongle at <strong>0 dB</strong>, FM peaks reach +11 dB, as high as with the LNA off and the dongle at 29.7 dB</td>
+</tr>
+</tbody>
+</table></div>
+<p>The filter is far wider than a SAW filter and lets FM through. It still works at 137 MHz, but
+the dongle's gain has to come down a lot so the strong out-of-band signals do not overload it.</p>
+<h4 id="choosing-the-dongles-gain">Choosing the dongle's gain</h4>
+<p>I measured the 137.0–138.2 MHz noise floor with <code>rtl_power</code> at each gain step, and recorded
+2 seconds of IQ at some of them to see how many samples hit the 8-bit limits (0 or 255).
+<code>rtl_power</code> rounds to the nearest tuner step, so 4.9 and 9.7 dB become 3.7 and 8.7 dB.</p>
+<pre><code class="language-bash">for g in 0 3.7 8.7 14.4 16.6 19.7 25.4 29.7; do drivers/rtlsdrblog-V1.4.0/x64/rtl_power.exe -f 136.6M:138.6M:5k -i 1 -e 3 -g $g scans/lna_usb_gain_$g.csv; done
+</code></pre>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>RTL-SDR gain</th>
+<th>Noise floor at 137 MHz (<code>rtl_power</code>)</th>
+<th>IQ std. dev. (8-bit levels)</th>
+<th>Clipped samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 dB</td>
+<td>−32.9 dB</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>3.7 dB</td>
+<td>−25.8 dB</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>8.7 dB</td>
+<td>−21.5 dB</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>14.4 dB</td>
+<td>−17.0 dB</td>
+<td>12.2</td>
+<td>0 %</td>
+</tr>
+<tr>
+<td><strong>16.6 dB</strong></td>
+<td><strong>−13.0 dB</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>19.7 dB</td>
+<td>−9.6 dB</td>
+<td>28.6</td>
+<td>0.014 %</td>
+</tr>
+<tr>
+<td>25.4 dB</td>
+<td>−5.5 dB</td>
+<td>47.4</td>
+<td><strong>1.07 %</strong></td>
+</tr>
+<tr>
+<td>29.7 dB</td>
+<td>−3.0 dB</td>
+<td>62.3</td>
+<td><strong>4.35 %</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>For comparison, without the LNA the recordings at 38.6 dB had a standard deviation of about 8.
+Up to 19.7 dB the noise floor rises step by step with the gain. That means the noise being
+measured comes from the LNA, as it should. From 25.4 dB the steps shrink and samples start to
+clip. I picked <strong>16.6 dB</strong>: between 14.4 and 19.7, with margin for the strong FM.</p>
+<h2 id="the-43-pass-with-the-lna-20-october-2236">The 43° pass with the LNA (20 October, 22:36)</h2>
+<p>I scheduled the evening Meteor M2-3 pass (22:38–22:48, 43° maximum) with the LNA on USB, the
+dongle at 16.6 dB and the antenna at the window. When the recording ended, the task extracted
+137.9 MHz and decoded it with SatDump by itself (guide 3, step 5):</p>
+<pre><code class="language-powershell">.\tools\programar_paso.ps1 -Nombre meteor-m2-3-lna -Inicio '2026-10-20 22:36' -Minutos 14 -Ganancia 16.6
+</code></pre>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Time</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Recording</td>
+<td>22:36–22:50</td>
+<td>14 min, 3.2 GB, no errors</td>
+</tr>
+<tr>
+<td>Analysis and extraction</td>
+<td>22:50–22:55</td>
+<td>137.9 MHz: max <strong>+0.6 dB</strong>; 137.1 MHz: max +0.1 dB. No clear signal</td>
+</tr>
+<tr>
+<td>SatDump LRPT 72k</td>
+<td>22:55–22:56</td>
+<td><code>Viterbi : NOSYNC</code>, BER ≈ 0.41 (pure noise), 0 lines</td>
+</tr>
+<tr>
+<td>SatDump LRPT 80k (retry)</td>
+<td>22:56–22:57</td>
+<td>Same: NOSYNC, 0 lines, no images</td>
+</tr>
+</tbody>
+</table></div>
+<p><img alt="Waterfall of the 43° pass: no 120 kHz LRPT band at 137.9 MHz, only narrow interference carriers" src="img/20261020_2236_meteor-m2-3-lna_waterfall.jpg" /></p>
+<p>The automation worked end to end, but the satellite never showed up: there is no ~120 kHz LRPT
+band at 137.9 MHz, only narrow carriers that the LNA now amplifies too. It is the third Meteor
+pass in a row with no signal, including a 70° pass on 2 October recorded without the LNA. The
+likely causes:</p>
+<ol>
+<li><strong>Meteor M2-3 is a weak target.</strong> According to the
+   <a href="https://www.sigidwiki.com/wiki/Low_Rate_Picture_Transmission_(LRPT)">Signal Identification Wiki</a>,
+   its antenna did not deploy correctly. Meteor M2-4 does not have that problem.</li>
+<li><strong>The antenna sits indoors</strong>, behind glass and a safety net, surrounded by buildings. A
+   V dipole is only just enough for LRPT even under open sky.</li>
+<li><strong>Local interference</strong>, possibly from the laptop or the LNA's USB power.</li>
+</ol>
+<h2 id="decisions">Decisions</h2>
+<h3 id="friday-23-meteor-m2-4-at-89-outdoors">Friday 23: Meteor M2-4 at 89°, outdoors</h3>
+<p>Meteor M2-4 passes almost straight overhead on Friday 23 at 16:52–17:03 (89° at 16:57), in
+daylight, so a successful decode would also give a color image. I will use the <strong>same setup,
+with the antenna outdoors</strong> instead of behind the window, so the result separates the antenna
+location from the rest of the chain. The recording and the decoding are scheduled:</p>
+<pre><code class="language-powershell">.\tools\programar_paso.ps1 -Nombre meteor-m2-4-lna -Inicio '2026-10-23 16:50' -Minutos 14 -Ganancia 16.6
+</code></pre>
+<p>If it does not sync at 137.9 MHz but the log shows a signal at 137.1 MHz, I can decode it by hand
+(PowerShell blocks <code>.ps1</code> scripts by default, so this runs it with the policy bypassed just for
+that run):</p>
+<pre><code class="language-powershell">powershell -ExecutionPolicy Bypass -File .\tools\decodificar_paso.ps1 -Archivo grabaciones\20261023_1650_meteor-m2-4-lna_137500000Hz_2048000sps.cu8 -Extraer 137.1e6
+</code></pre>
+<h3 id="parts-for-an-fm-filter">Parts for an FM filter</h3>
+<p>Because the LNA's filter lets FM through and forces the dongle's gain down, I ordered the cables
+and adapters needed to insert an <strong>FM band-stop filter</strong> into the chain:</p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Quantity</th>
+<th>Price (USD)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SMA male to SMA male adapter, gold-plated brass</td>
+<td>5</td>
+<td>3.73</td>
+</tr>
+<tr>
+<td>SMA male to SMA male RG316 cable, 2 m</td>
+<td>5</td>
+<td>18.21</td>
+</tr>
+<tr>
+<td>SMA male to SMA male RG316 cable, 30 cm</td>
+<td>5</td>
+<td>5.39</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td></td>
+<td><strong>27.33</strong></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="next-steps">Next steps</h2>
+<ul>
+<li>Add the result of Friday's 89° pass here.</li>
+<li>When the parts arrive, insert the FM filter in front of the LNA and repeat the 120–160 MHz and
+  FM sweeps to measure how much it attenuates.</li>
+<li>Move the LNA to the antenna end of the coax, where it improves the noise figure the most.</li>
+</ul>
+<nav class="pasos"><a href="05-isdbt-recording.html">← ISDB-Tb recording for FPGA</a><a href="07-iss-sstv.html">SSTV images from the ISS →</a></nav>
+</main>
+<footer>Andrés Alvear · Updated 2026-10-24 · No cookies or JavaScript</footer>
+</div>
+</body>
+</html>

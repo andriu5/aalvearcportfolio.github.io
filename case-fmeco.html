@@ -1,0 +1,157 @@
+<!DOCTYPE HTML>
+<!--
+	Massively by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html lang="en">
+	<head>
+		<title>Automated Validation of Formality ECO | Andrés Alvear</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<meta name="description" content="Case study: automated validation of Formality ECO nightly builds at Synopsys, with Python ETL, an HPC farm and an AI agent." />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			@media screen and (max-width: 736px) {
+				table.summary td { display: block; padding-top: 0.25em; padding-bottom: 0.25em; }
+				table.summary td:first-child { padding-top: 0.9em; }
+				table.summary td:last-child { padding-bottom: 0.9em; }
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<a href="index.html" class="logo">Andrés Alvear's Portfolio</a>
+					</header>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul class="links">
+							<li><a href="index.html">Projects</a></li>
+							<li><a href="case-mini.html">MINI</a></li>
+							<li class="active"><a href="case-fmeco.html">Formality ECO</a></li>
+							<li><a href="case-degradia.html">DegradIA</a></li>
+						</ul>
+						<ul class="icons">
+							<li><a href="https://www.linkedin.com/in/andres-alvear-028bb01ba/" class="icon brands alt fa-linkedin"><span class="label">Linkedin</span></a></li>
+							<li><a href="https://github.com/andriu5" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Post -->
+							<section class="post">
+								<header class="major">
+									<span class="date">2023 – 2026 · Synopsys</span>
+									<h1>Automated Validation<br />
+									of Formality ECO</h1>
+									<p>A system that validates every nightly build of a chip verification tool<br />
+									and cut the review of each cycle from a full working day to minutes.</p>
+								</header>
+
+								<a href="images/case_fmeco_flow.svg" class="image main"><img src="images/case_fmeco_flow.svg" alt="Diagram: the six stages of the Formality ECO flow and the validation pipeline, from logs to quality checkpoints and their three possible outcomes" /></a>
+
+								<h2>At a glance</h2>
+								<div class="table-wrapper">
+									<table class="summary">
+										<tbody>
+											<tr><td><b>Challenge</b></td><td>Validate every Formality ECO nightly build without manually reading the logs of hundreds of runs lasting up to 45 hours.</td></tr>
+											<tr><td><b>Approach</b></td><td>A Python ETL pipeline over the six stages of the flow, compute on the HPC farm, and static HTML dashboards with quality checkpoints; an AI agent re-runs infrastructure failures.</td></tr>
+											<tr><td><b>My contribution</b></td><td>Design and development of the whole system, root-cause analysis of real failures, and tickets to R&amp;D teams in the US and India.</td></tr>
+											<tr><td><b>Results</b></td><td>From a day of manual review to minutes per cycle; the team's standard tool for approving nightlies; failures caught before reaching customers.</td></tr>
+											<tr><td><b>Skills</b></td><td>Formal verification and EDA tools, Python automation and ETL, HPC with LSF, designing under resource constraints, AI agents, root-cause analysis.</td></tr>
+										</tbody>
+									</table>
+								</div>
+
+								<h2>Context and challenge</h2>
+								<p>Formality ECO (FMECO) is the Synopsys tool that computes and verifies late engineering change orders (ECOs) on a chip design that has already been synthesized. I worked on the Formality team, alongside synthesis tools and RTL-to-GDSII flows.</p>
+								<p>Every FMECO nightly build had to be validated against a set of designs, including test cases from leading semiconductor companies, with flows of up to 45 hours. The review was done by reading logs by hand: hundreds of runs per cycle, and a full working day each time.</p>
+								<p>I came to this role after five years as technical lead of the Synopsys Product Validation team in Chile, where I defined the validation methodology and mentored six engineers.</p>
+
+								<h2>Analysis and solution</h2>
+								<p>Each run goes through six stages: FMECO pre-synthesis, targeted synthesis in Fusion Compiler, FMECO post-synthesis, patch confirmation, patch application in Fusion Compiler, and final formal equivalence verification. Every design ran with the same Fusion Compiler version and a different FMECO version, so any change in the results could be attributed to the build under test.</p>
+								<ul>
+									<li><b>Python 3 ETL.</b> Scripts that extract the data from each stage's logs, transform it for analysis, and generate one HTML dashboard per run. A separate script builds the index page with links to every report.</li>
+									<li><b>Quality checkpoints.</b> If the build passes all of them, FMECO passes the quality checks and the nightly is approved. Real failures are analyzed and reported to R&amp;D with a ticket.</li>
+									<li><b>AI agent.</b> Infrastructure failures (machine, disk) are caught by an AI agent that checks whether the failure is real and re-runs the flow automatically.</li>
+									<li><b>More coverage.</b> I ported customer test cases into the suite and created new ones with AI agents, verified with VCS, Design Compiler, Fusion Compiler and Formality, so they could serve as stress tests for the feature under test.</li>
+								</ul>
+								<p><b>Why this architecture:</b> there were no ready-made tools to adapt. The shared server could not host a database, services like Grafana were not available, and a Jenkins server could not survive the resource limits. So I built the pipeline on the HPC farm with LSF: heavy processing runs on machines requested on demand, and the output is static HTML pages that need no server.</p>
+
+								<h2>My contribution</h2>
+								<p>I designed and built the team's entire reporting system: extraction, transformation, dashboards, index page, and automation with the nightlies. Every week I checked that the checkpoints passed, investigated the root cause of each real failure, and filed tickets to R&amp;D with the diagnosis, working in English with teams in the US and India.</p>
+
+								<h2>Results</h2>
+								<ul>
+									<li>Review time per cycle went from <b>a full working day to minutes</b>.</li>
+									<li>The dashboard became the <b>team's standard tool</b> for approving FMECO nightly builds.</li>
+									<li>Infrastructure failures re-run on their own; only real failures reach R&amp;D.</li>
+									<li>Failures were caught in regression, before reaching customers, and I also resolved 20 to 50 complex customer cases per year.</li>
+								</ul>
+
+								<h2>Lessons learned</h2>
+								<ul>
+									<li>Constraints shape the architecture: with no database or services, using the HPC farm for compute and static HTML for results produced a stable system.</li>
+									<li>What I would do differently: simplify the scripts, write the log extraction in Go to make it faster, and use asynchronous visualization tools that can handle thousands of regressions.</li>
+								</ul>
+
+								<ul class="actions special">
+									<li><a href="case-mini.html" class="button">Previous case: MINI</a></li>
+									<li><a href="case-degradia.html" class="button primary">Next case: DegradIA</a></li>
+								</ul>
+							</section>
+
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<section class="split contact">
+							<section class="alt">
+								<h3>Address</h3>
+								<p>Valparaiso, Chile</p>
+							</section>
+							<section>
+								<h3>Phone</h3>
+								<p><a href="#">+56985624931</a></p>
+							</section>
+							<section>
+								<h3>Email</h3>
+								<p><a href="#">andres.alvear5@gmail.com</a></p>
+							</section>
+							<section>
+								<h3>Social</h3>
+								<ul class="icons alt">
+									<li><a href="https://www.linkedin.com/in/andres-alvear-028bb01ba/" class="icon brands alt fa-linkedin"><span class="label">Linkedin</span></a></li>
+									<li><a href="https://github.com/andriu5" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+								</ul>
+							</section>
+						</section>
+					</footer>
+
+				<!-- Copyright -->
+					<div id="copyright">
+						<ul><li>&copy; aalvearc</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li></ul>
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

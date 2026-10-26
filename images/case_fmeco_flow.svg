@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" role="img" aria-label="Formality ECO validation flow diagram" font-family="'Source Sans Pro', Helvetica, Arial, sans-serif"><title>Formality ECO validation flow diagram</title><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6670"/></marker></defs><rect width="1000" height="540" fill="#f7f9fb"/><text x="20" y="40" font-size="22" font-weight="700" fill="#212931" text-anchor="start">Validating a Formality ECO nightly build</text>
+<text x="20" y="78" font-size="15" font-weight="600" fill="#5b6670" text-anchor="start">Flow for each design · same Fusion Compiler version, different FMECO version</text>
+<rect x="20" y="95" width="140" height="66" rx="8" fill="#e3f6fd" stroke="#18bfef" stroke-width="1.5"/>
+<text x="90.0" y="123.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">FMECO</text>
+<text x="90.0" y="143.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">pre-synthesis</text>
+<rect x="186" y="95" width="140" height="66" rx="8" fill="#eef1f4" stroke="#c9d1d8" stroke-width="1.5"/>
+<text x="256.0" y="123.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Targeted</text>
+<text x="256.0" y="143.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">Synthesis (FC)</text>
+<line x1="162" y1="128" x2="183" y2="128" stroke="#5b6670" stroke-width="2" marker-end="url(#a)"/>
+<rect x="352" y="95" width="140" height="66" rx="8" fill="#e3f6fd" stroke="#18bfef" stroke-width="1.5"/>
+<text x="422.0" y="123.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">FMECO</text>
+<text x="422.0" y="143.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">post-synthesis</text>
+<line x1="328" y1="128" x2="349" y2="128" stroke="#5b6670" stroke-width="2" marker-end="url(#a)"/>
+<rect x="518" y="95" width="140" height="66" rx="8" fill="#e3f6fd" stroke="#18bfef" stroke-width="1.5"/>
+<text x="588.0" y="123.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">FMECO</text>
+<text x="588.0" y="143.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">confirm patch</text>
+<line x1="494" y1="128" x2="515" y2="128" stroke="#5b6670" stroke-width="2" marker-end="url(#a)"/>
+<rect x="684" y="95" width="140" height="66" rx="8" fill="#eef1f4" stroke="#c9d1d8" stroke-width="1.5"/>
+<text x="754.0" y="123.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Apply patch</text>
+<text x="754.0" y="143.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">(FC)</text>
+<line x1="660" y1="128" x2="681" y2="128" stroke="#5b6670" stroke-width="2" marker-end="url(#a)"/>
+<rect x="850" y="95" width="140" height="66" rx="8" fill="#eef1f4" stroke="#c9d1d8" stroke-width="1.5"/>
+<text x="920.0" y="123.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Final FEV</text>
+<text x="920.0" y="143.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">equivalence</text>
+<line x1="826" y1="128" x2="847" y2="128" stroke="#5b6670" stroke-width="2" marker-end="url(#a)"/>
+<text x="20" y="215" font-size="15" font-weight="600" fill="#5b6670" text-anchor="start">Automated pipeline · every nightly, on the HPC farm with LSF</text>
+<rect x="20" y="232" width="215" height="66" rx="8" fill="#ffffff" stroke="#c9d1d8" stroke-width="1.5"/>
+<text x="127.5" y="260.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Logs</text>
+<text x="127.5" y="280.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">hundreds of runs</text>
+<rect x="268" y="232" width="215" height="66" rx="8" fill="#ffffff" stroke="#c9d1d8" stroke-width="1.5"/>
+<text x="375.5" y="260.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Python 3 ETL</text>
+<text x="375.5" y="280.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">extract and transform</text>
+<line x1="237" y1="265" x2="265" y2="265" stroke="#5b6670" stroke-width="2" marker-end="url(#a)"/>
+<rect x="516" y="232" width="215" height="66" rx="8" fill="#ffffff" stroke="#c9d1d8" stroke-width="1.5"/>
+<text x="623.5" y="260.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">HTML dashboard</text>
+<text x="623.5" y="280.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">per run + index</text>
+<line x1="485" y1="265" x2="513" y2="265" stroke="#5b6670" stroke-width="2" marker-end="url(#a)"/>
+<rect x="764" y="232" width="215" height="66" rx="8" fill="#ffffff" stroke="#18bfef" stroke-width="1.5"/>
+<text x="871.5" y="260.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Quality</text>
+<text x="871.5" y="280.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">checkpoints</text>
+<line x1="733" y1="265" x2="761" y2="265" stroke="#5b6670" stroke-width="2" marker-end="url(#a)"/>
+<path d="M871.5,298 L871.5,328 L170.0,328 L170.0,372" fill="none" stroke="#5b6670" stroke-width="2" marker-end="url(#a)"/>
+<rect x="20" y="375" width="300" height="66" rx="8" fill="#e6f6ec" stroke="#3aa66a" stroke-width="1.5"/>
+<text x="170.0" y="403.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">All pass</text>
+<text x="170.0" y="423.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">→ nightly approved</text>
+<path d="M871.5,298 L871.5,328 L500.0,328 L500.0,372" fill="none" stroke="#5b6670" stroke-width="2" marker-end="url(#a)"/>
+<rect x="350" y="375" width="300" height="66" rx="8" fill="#fff1e6" stroke="#e8590c" stroke-width="1.5"/>
+<text x="500.0" y="403.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Real failure</text>
+<text x="500.0" y="423.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">→ root cause and R&amp;D ticket</text>
+<path d="M871.5,298 L871.5,328 L830.0,328 L830.0,372" fill="none" stroke="#5b6670" stroke-width="2" marker-end="url(#a)"/>
+<rect x="680" y="375" width="300" height="66" rx="8" fill="#e3f6fd" stroke="#18bfef" stroke-width="1.5"/>
+<text x="830.0" y="403.2" text-anchor="middle" font-size="15" font-weight="700" fill="#212931">Machine or disk failure</text>
+<text x="830.0" y="423.2" text-anchor="middle" font-size="15" font-weight="400" fill="#5b6670">→ AI agent checks and re-runs</text>
+<line x1="20" y1="482" x2="980" y2="482" stroke="#d5dbe0"/>
+<text x="20" y="515" font-size="17" font-weight="700" fill="#212931" text-anchor="start">Result: review time per cycle went from a full working day to minutes.</text></svg>

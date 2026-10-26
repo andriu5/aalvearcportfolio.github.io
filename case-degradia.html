@@ -1,0 +1,156 @@
+<!DOCTYPE HTML>
+<!--
+	Massively by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html lang="en">
+	<head>
+		<title>DegradIA: Corrosion Prediction | Andrés Alvear</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<meta name="description" content="Case study: DegradIA, a Go and Python platform that simulates corrosion of 347H steel in molten salt, validated against SEM-EDS and used by a research lab." />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			@media screen and (max-width: 736px) {
+				table.summary td { display: block; padding-top: 0.25em; padding-bottom: 0.25em; }
+				table.summary td:first-child { padding-top: 0.9em; }
+				table.summary td:last-child { padding-bottom: 0.9em; }
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<a href="index.html" class="logo">Andrés Alvear's Portfolio</a>
+					</header>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul class="links">
+							<li><a href="index.html">Projects</a></li>
+							<li><a href="case-mini.html">MINI</a></li>
+							<li><a href="case-fmeco.html">Formality ECO</a></li>
+							<li class="active"><a href="case-degradia.html">DegradIA</a></li>
+						</ul>
+						<ul class="icons">
+							<li><a href="https://www.linkedin.com/in/andres-alvear-028bb01ba/" class="icon brands alt fa-linkedin"><span class="label">Linkedin</span></a></li>
+							<li><a href="https://github.com/andriu5" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Post -->
+							<section class="post">
+								<header class="major">
+									<span class="date">2025 · Universidad de Antofagasta, ANID VIU 24P0174 project</span>
+									<h1>DegradIA: Corrosion<br />
+									Prediction</h1>
+									<p>A platform that simulates steel corrosion in molten salt for solar power plants.<br />
+									It turned months of lab work into hours of simulation, and a research lab uses it today.</p>
+								</header>
+
+								<a href="images/case_degradia_architecture.svg" class="image main"><img src="images/case_degradia_architecture.svg" alt="Diagram: from the published model to the Python prototype, the concurrent Go engine, the API, the web visualization and the SEM-EDS validation" /></a>
+
+								<h2>At a glance</h2>
+								<div class="table-wrapper">
+									<table class="summary">
+										<tbody>
+											<tr><td><b>Challenge</b></td><td>Replace months-long experimental campaigns with a reliable prediction of 347H steel corrosion in molten salt.</td></tr>
+											<tr><td><b>Approach</b></td><td>Implement the principal investigator's cellular automaton, validate it against SEM-EDS, and move the engine from Python to Go once performance and concurrency became the bottleneck.</td></tr>
+											<tr><td><b>My contribution</b></td><td>Algorithm implementation, software architecture and development (engine, API and web visualization), and the validation pipeline.</td></tr>
+											<tr><td><b>Results</b></td><td>MSE ≈ 2% against SEM-EDS and R² = 0.97; from months to hours; TRL 6 and patent pending; used at CDEA and the origin of Novatherm Analytics.</td></tr>
+											<tr><td><b>Skills</b></td><td>Software architecture, concurrent Go and Python, performance optimization, model validation, turning research into a product.</td></tr>
+										</tbody>
+									</table>
+								</div>
+
+								<h2>Context and challenge</h2>
+								<p>Concentrated solar power plants store energy in molten salts, which corrode the 347H steel of tanks and pipes. Assessing that corrosion required months-long experimental campaigns, which slowed down decisions about materials.</p>
+								<p>J. C. Reinoso-Burrows, the principal investigator, had proposed a cellular automaton model to simulate the corrosion of 347H steel in solar salt at pilot-plant scale (<a href="https://www.mdpi.com/1996-1944/18/3/713"><i>Materials</i>, 2025</a>). The ANID VIU 24P0174 project aimed to turn that research into a software tool validated against measured data.</p>
+
+								<h2>Analysis and solution</h2>
+								<ul>
+									<li><b>The model.</b> A 400 × 400 lattice of 0.125 µm cells, where each iteration represents 10.08 s of exposure: simulating the 168 h of the test takes 60,000 iterations.</li>
+									<li><b>From Python to Go.</b> I wrote the first version in Python 3, which could not run tasks truly in parallel. I rewrote the engine in Go, which provides real concurrency.</li>
+									<li><b>Validation.</b> An automated pipeline compares the simulation with SEM-EDS characterization data.</li>
+									<li><b>Platform.</b> The Go engine is completed by a services API and a 2D/3D web visualization.</li>
+								</ul>
+
+								<h2>My contribution</h2>
+								<p>I was the researcher in charge of implementing the cellular automaton and the software architect: the engine in Python and then in Go, the API, the web visualization and the validation pipeline. I worked with J. C. Reinoso-Burrows and professors M. Cortés-Carmona, M. Henríquez and E. Fuentealba, co-authors of the <i>Materials</i> paper.</p>
+
+								<h2>Results</h2>
+								<ul>
+									<li>Model validated against SEM-EDS: <b>mean squared error of about 2%</b> (4.25 µm oxide layer after 168 h) and <b>R² = 0.97</b> between simulation and experiment.</li>
+									<li>The evaluation cycle went <b>from months to hours</b>.</li>
+									<li>Platform at <b>TRL 6</b>, patent pending, with results published in <i>Materials</i> 18(3):713 (2025).</li>
+									<li>It is used today by the <a href="https://www.cdeaua.cl/home/laboratoriosalesfundidas/">CDEA Molten Salt Laboratory</a> at Universidad de Antofagasta for its research.</li>
+									<li>When the project ended, in November 2025, we founded <b>Novatherm Analytics</b>, where I am CTO and R&amp;D engineer. We are integrating DegradIA with CFD simulations of dynamic corrosion in the pilot plant, aiming at a molten-salt Carnot battery.</li>
+								</ul>
+
+								<h2>Lessons learned</h2>
+								<ul>
+									<li>Compute volume shapes the architecture: 60,000 iterations over 160,000 cells per simulation required real concurrency, which moved the engine to Go.</li>
+									<li>A validated scientific model can become a product: with a real user, a pending patent and a company that carries it forward.</li>
+									<li>What I would do differently: collect more real experimental data from the start, so machine learning could be applied on top of the model.</li>
+								</ul>
+
+								<ul class="actions special">
+									<li><a href="case-fmeco.html" class="button">Previous case: Formality ECO</a></li>
+									<li><a href="index.html" class="button primary">Back to projects</a></li>
+								</ul>
+							</section>
+
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<section class="split contact">
+							<section class="alt">
+								<h3>Address</h3>
+								<p>Valparaiso, Chile</p>
+							</section>
+							<section>
+								<h3>Phone</h3>
+								<p><a href="#">+56985624931</a></p>
+							</section>
+							<section>
+								<h3>Email</h3>
+								<p><a href="#">andres.alvear5@gmail.com</a></p>
+							</section>
+							<section>
+								<h3>Social</h3>
+								<ul class="icons alt">
+									<li><a href="https://www.linkedin.com/in/andres-alvear-028bb01ba/" class="icon brands alt fa-linkedin"><span class="label">Linkedin</span></a></li>
+									<li><a href="https://github.com/andriu5" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+								</ul>
+							</section>
+						</section>
+					</footer>
+
+				<!-- Copyright -->
+					<div id="copyright">
+						<ul><li>&copy; aalvearc</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li></ul>
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

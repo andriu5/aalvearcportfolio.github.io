@@ -508,16 +508,252 @@ and adapters needed to insert an <strong>FM band-stop filter</strong> into the c
 </tr>
 </tbody>
 </table></div>
+<h2 id="first-signal-from-meteor-m2-4-29-october-0359">First signal from Meteor M2-4 (29 October, 03:59)</h2>
+<p>With the parts installed, the chain is now: antenna → LNA RFin → RFout → <strong>FM band-stop filter</strong> →
+dongle. The filter goes after the LNA: that way its loss does not hurt the noise figure, and it
+protects the dongle from the FM that the LNA amplifies. The V dipole sits outside the window, which faces southwest (210°), stuck to the glass with
+the mounting kit. The first recording with the filter came out empty because I had connected the
+LNA backwards (antenna on RFout). Once fixed, the floor at 137 MHz went back to about −16 dB with
+the dongle at 14.4 dB, the same as before the filter. I scheduled the night pass of Meteor M2-4:</p>
+<pre><code class="language-powershell">powershell -ExecutionPolicy Bypass -File .\tools\programar_paso.ps1 -Nombre meteor-m2-4-filtro -Inicio '2026-10-29 03:59' -Minutos 15 -Ganancia 14.4
+</code></pre>
+<p><img alt="Waterfall of the Meteor M2-4 pass: the LRPT band shows up at 137.9 MHz between minutes 8 and 13" src="img/20261029_0359_meteor-m2-4-filtro_waterfall.jpg" /></p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Minutes</th>
+<th>Time</th>
+<th>Satellite</th>
+<th>In the waterfall</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–7</td>
+<td>03:59–04:06</td>
+<td>To the north (azimuth 18–40°), rising to 65°</td>
+<td>Nothing: the building blocks the whole northern sky</td>
+</tr>
+<tr>
+<td>8–10</td>
+<td>04:07–04:09</td>
+<td>Overhead (77°), heading south</td>
+<td>The LRPT band at 137.9 MHz, the best part of the pass</td>
+</tr>
+<tr>
+<td>11–13</td>
+<td>04:10–04:12</td>
+<td>To the south (azimuth 188–190°), from 25° down to 11°</td>
+<td>The band, fading out</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>The satellite shows up for the first time</strong>: a band about 100 kHz wide at 137.9 MHz, with
+  horizontal fading stripes. With a linearly polarized antenna, the signal rises and falls every
+  few seconds.</li>
+<li><strong>From the window I only hear the southern half of the pass.</strong></li>
+<li><strong>There is local noise.</strong> Until minute 8.6 the floor was several dB higher, with narrow carriers
+  at 137.22, 137.28, 137.74 and 138.18–138.30 MHz. All of it switched off at once at 04:07:36, so
+  it comes from a single device I have not identified yet.</li>
+<li><strong>SatDump did not sync.</strong> I tried the 72k and 80k pipelines, and also just the clean stretch
+  (minutes 8.5 to 13.5): <code>Viterbi : NOSYNC</code>, <strong>3.7 dB peak SNR</strong> and 0 lines.</li>
+</ul>
+<h2 id="validating-the-decoder-with-a-reference-recording">Validating the decoder with a reference recording</h2>
+<p>No pass had produced an image so far, which left a question open: was the failure only the signal,
+or also the decoding chain (<code>analizar_iq.py --extraer</code> → <code>.cs16</code> → SatDump)? Ruling out the chain
+takes a recording that does decode. The
+<a href="https://www.sigidwiki.com/wiki/Low_Rate_Picture_Transmission_(LRPT)">Signal Identification Wiki</a>
+links one on Mega: <code>LRPT_16-29-02_137900kHz.zip</code> (58 MB). It holds a 16-bit stereo IQ WAV at
+187.5 kS/s, 105 s long, recorded in 2018 from the original Meteor M2. I saved it to
+<code>referencia\lrpt_sigid\</code>.</p>
+<p><strong>1. SatDump directly.</strong> I stripped the WAV's 44-byte header to leave raw cs16 samples and decoded
+them:</p>
+<pre><code class="language-bash">tail -c +45 referencia/lrpt_sigid/LRPT_16-29-02_137900kHz.wav &gt; referencia/lrpt_sigid/ref_187500.cs16
+</code></pre>
+<pre><code class="language-powershell">cd satdump
+.\satdump.exe meteor_m2_lrpt baseband ..\referencia\lrpt_sigid\ref_187500.cs16 ..\referencia\lrpt_sigid\directo_m2 --samplerate 187500 --baseband_format cs16 --fill_missing
+</code></pre>
+<p>It gave <strong>640 lines</strong>. Mind the pipeline: <code>meteor_m2_lrpt</code> is for the old satellite, which
+transmitted without interleaving. With <code>meteor_m2-x_lrpt</code>, the one for M2-3/M2-4, the Viterbi locks
+(BER 0.007) but the deframer does not, and no image comes out.</p>
+<p><strong>2. The full chain.</strong> <code>tools\simular_cu8.py</code> turns the reference into a <code>.cu8</code> just like ours: it
+resamples it to 2.048 MS/s, shifts it to +400 kHz (137.9 MHz with the dongle at 137.5 MHz) and
+quantizes it to 8 bits. Then it goes through the same steps as a real recording:</p>
+<pre><code class="language-powershell">python tools\simular_cu8.py referencia\lrpt_sigid\LRPT_16-29-02_137900kHz.wav referencia\lrpt_sigid\ref_simulada_137500000Hz_2048000sps.cu8
+python tools\analizar_iq.py referencia\lrpt_sigid\ref_simulada_137500000Hz_2048000sps.cu8 --centro 137.5e6 --sr 2048000 --extraer 137.9e6
+cd satdump
+.\satdump.exe meteor_m2_lrpt baseband ..\referencia\lrpt_sigid\ref_simulada_137500000Hz_2048000sps_137.900MHz_512k.cs16 ..\referencia\lrpt_sigid\cadena --samplerate 512000 --baseband_format cs16 --fill_missing
+</code></pre>
+<p>It gave <strong>656 lines</strong> and the color images. <strong>The chain works.</strong></p>
+<p><img alt="The reference decoded through the full chain: the Netherlands and the North Sea in 221 false color" src="img/referencia_lrpt_cadena_221.jpg" /></p>
+<h3 id="how-much-signal-it-takes">How much signal it takes</h3>
+<p>With <code>--ruido</code> the script adds white noise. That let me find where decoding stops, measured with
+the same number <code>analizar_iq.py</code> reports for our recordings:</p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Added noise (rms, u8 counts)</th>
+<th><code>analizar_iq</code> at 137.9 MHz</th>
+<th>SatDump peak SNR</th>
+<th>Lines</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>none</td>
+<td>+38.8 dB</td>
+<td></td>
+<td>656</td>
+</tr>
+<tr>
+<td>25</td>
+<td>+5.5 dB</td>
+<td></td>
+<td>584</td>
+</tr>
+<tr>
+<td>35</td>
+<td>+3.8 dB</td>
+<td>5.4 dB</td>
+<td>512</td>
+</tr>
+<tr>
+<td>45</td>
+<td>+2.7 dB</td>
+<td></td>
+<td>48</td>
+</tr>
+<tr>
+<td>55</td>
+<td>+2.0 dB</td>
+<td>1.0 dB</td>
+<td>0</td>
+</tr>
+</tbody>
+</table></div>
+<p>Decoding drops out around <strong>+3 dB in <code>analizar_iq</code></strong>, which matches the threshold it already uses
+to report "SEÑAL DETECTADA". The 03:59 pass reached <strong>+3.0 dB</strong> and a 3.7 dB peak SNR in SatDump,
+only briefly and with fading. It fell just under the threshold: <strong>it was short by about
+1.5–2 dB</strong>, not a software problem. The margin has to come from the antenna and the location: open
+sky, with no buildings or devices nearby.</p>
+<h2 id="powering-the-lna-without-adding-noise">Powering the LNA without adding noise</h2>
+<p>Before heading out I measured the floor at 137 MHz with different power sources for the LNA. I used
+the same antenna and 14.4 dB on the dongle:</p>
+<pre><code class="language-bash">./drivers/rtlsdrblog-V1.4.0/x64/rtl_power.exe -f 136.6M:138.6M:5k -i 1 -e 3 -g 14.4 ./scans/prueba_laptop.csv
+</code></pre>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>LNA power</th>
+<th>Floor</th>
+<th>Carriers above the floor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Laptop on a high-power Dell USB-C dock that also charged it (night of 28/10)</td>
+<td>−15.5 dB</td>
+<td>none to speak of</td>
+</tr>
+<tr>
+<td>USB wall charger</td>
+<td>−18.1 dB</td>
+<td><strong>138.151 MHz, +14 dB</strong></td>
+</tr>
+<tr>
+<td>Laptop USB on battery, no dock or charger</td>
+<td><strong>−27.5 dB</strong></td>
+<td>none above +3 dB</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>The wall charger adds a carrier at 138.151 MHz</strong>, which goes away when it is unplugged. It is
+  no good for recording passes.</li>
+<li><strong>On battery the floor sits about 12 dB lower</strong> than the night before, when the laptop was on
+  the dock. That noise most likely came from the dock or its power supply. It would explain why the
+  03:59 pass, recorded that way, fell just under the threshold. It still needs confirming by
+  measuring with and without the dock in the same spot.</li>
+<li>The USB-A to USB-C cable makes no difference: the home cable and the car cable gave the same
+  result.</li>
+<li>The board does not take power from the bias tee (attempt 1), so <strong>the bias tee stays off</strong>.</li>
+</ul>
+<h2 id="first-image-meteor-m2-4-from-the-sporting-29-october-1620">First image: Meteor M2-4 from the Sporting (29 October, 16:20)</h2>
+<p>I could not make it to the Concón dunes in time, so I recorded from the Valparaíso Sporting Club in
+Viña del Mar: open sky, away from buildings. The chain: antenna → LNA (on the laptop's USB, on
+battery) → FM filter → dongle at 14.4 dB. I started the recording by hand at 16:20:</p>
+<pre><code class="language-powershell">powershell -ExecutionPolicy Bypass -File .\tools\grabar_paso.ps1 -Nombre meteor-m2-4-concon -Minutos 18 -Ganancia 14.4
+</code></pre>
+<p>The pass rose in the southeast, peaked at <strong>45° in the east at 16:28</strong> and set in the north.</p>
+<p>The dipole was opened out straight (180°) and horizontal, on a tripod 1.5 m off the ground. The LNA
+and the filter hang from the tripod, and the laptop sat on a blanket about a meter away.</p>
+<p><img alt="Setup at the Sporting: the tripod with the dipole in the middle of the field, with clear sky all around" src="img/20261029_sporting_montaje_general.jpg" /></p>
+<p><img alt="The horizontal dipole on the tripod and the laptop on the blanket" src="img/20261029_sporting_dipolo_tripode.jpg" /></p>
+<p><img alt="Close-up: the coax runs from the dipole to the LNA and the filter hanging from the tripod, then to the dongle on the laptop" src="img/20261029_sporting_lna_laptop.jpg" /></p>
+<p><img alt="Waterfall of the pass from the Sporting: the LRPT band at 137.9 MHz, strong between minutes 4 and 10" src="img/20261029_1620_meteor-m2-4-sporting_waterfall.jpg" /></p>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th></th>
+<th>03:59 at home</th>
+<th>16:20 at the Sporting</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Max at 137.9 MHz (<code>analizar_iq</code>)</td>
+<td>+3.0 dB</td>
+<td><strong>+12.2 dB</strong></td>
+</tr>
+<tr>
+<td>Time above +3 dB</td>
+<td>0 min</td>
+<td><strong>8.5 min</strong></td>
+</tr>
+<tr>
+<td>SatDump LRPT 72k</td>
+<td>NOSYNC, 0 lines</td>
+<td><strong>Viterbi SYNCED, ~2900 lines per channel</strong></td>
+</tr>
+<tr>
+<td>Images</td>
+<td>none</td>
+<td><strong>38</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p><img alt="First Meteor M2-4 image, north up: Chile, the snow-covered Andes, Argentina, Uruguay and the Río de la Plata" src="img/20261029_1620_meteor-m2-4-sporting_msa_mapa.jpg" /></p>
+<p>The best image is <code>MSU-MR (Filled)\msu_mr_rgb_MSA_corrected_map.png</code>, with country borders overlaid.
+SatDump outputs it south up because the satellite was heading north; the one above is rotated 180°.
+It shows the Chilean coast down to Chiloé, the snowy Andes, Argentina from Paraguay to the Valdés
+Peninsula, Uruguay and the Río de la Plata.</p>
+<p>The 80k pipeline did not sync on the same recording: Meteor M2-4 was transmitting at 72k.</p>
+<h3 id="why-there-are-gaps">Why there are gaps</h3>
+<p>The signal was more than enough to decode, but the image has many missing lines, which SatDump
+fills in gray. There are three likely causes, none verified yet:</p>
+<ol>
+<li><strong>Fading.</strong> In the waterfall the signal drops out every 30 to 60 seconds. The dipole is linearly
+   polarized, and at times it barely picks up the satellite's circular polarization.</li>
+<li><strong>Very low recording level.</strong> The samples have a standard deviation of only 2 to 3 of the 256
+   levels of the 8-bit ADC; at home it was 13.8. Outdoors there is hardly any noise or FM, and
+   with the FM filter after the LNA the dongle's gain can go up to about 30 dB.</li>
+<li><strong>Possibly dropped samples.</strong> Recording 1080 s of signal took 1101.6 s; at home, plugged in,
+   the overhead is about 2 s. On battery, Windows may save power and the dongle may drop blocks
+   of data.</li>
+</ol>
 <h2 id="next-steps">Next steps</h2>
 <ul>
 <li>Add the result of Friday's 89° pass here.</li>
-<li>When the parts arrive, insert the FM filter in front of the LNA and repeat the 120–160 MHz and
-  FM sweeps to measure how much it attenuates.</li>
+<li>On the next open-sky pass: measure with <code>rtl_power</code> on site and raise the gain to about 30 dB,
+  and set Windows to "Best performance" to rule out dropped samples.</li>
+<li>Confirm whether the Dell dock is what adds noise at home, by measuring with and without it.</li>
+<li>Try a circularly polarized antenna (QFH or turnstile) to get rid of the fading.</li>
 <li>Move the LNA to the antenna end of the coax, where it improves the noise figure the most.</li>
 </ul>
 <nav class="pasos"><a href="05-isdbt-recording.html">← ISDB-Tb recording for FPGA</a><a href="07-iss-sstv.html">SSTV images from the ISS →</a></nav>
 </main>
-<footer>Andrés Alvear · Updated 2026-10-24 · No cookies or JavaScript</footer>
+<footer>Andrés Alvear · Updated 2026-10-29 · No cookies or JavaScript</footer>
 </div>
 </body>
 </html>

@@ -70,6 +70,44 @@ block about 120 kHz wide that appears during the pass (about 10 minutes).</p>
 METEOR-M2 3   Fri 02 22:56:46    70°  23:07  137.900 MHz LRPT
 </code></pre>
 <p>The columns are satellite, start, maximum elevation, end and frequency.</p>
+<h3 id="web-alternative-heavens-above">Web alternative: Heavens-Above</h3>
+<p>On <a href="https://www.heavens-above.com">heavens-above.com</a> there are two ways to reach the Meteors:</p>
+<ul>
+<li><strong>By name, with wildcards.</strong> In <em>Satellite database</em>, the <em>Name</em> field takes wildcards: <code>?</code>
+  stands for one character and <code>*</code> for any text (the field defaults to <code>*</code>). <code>Meteor M2-?</code> finds
+  M2-2, M2-3 and M2-4 at once. Typing <code>meteor m2-3</code> as is, on the other hand, finds nothing.</li>
+<li><strong>By their NORAD catalog number</strong>, straight in the URL:</li>
+</ul>
+<div class="tabla"><table>
+<thead>
+<tr>
+<th>Satellite</th>
+<th>NORAD ID</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Meteor M2-3</td>
+<td><strong>57166</strong></td>
+</tr>
+<tr>
+<td>Meteor M2-4</td>
+<td><strong>59051</strong></td>
+</tr>
+</tbody>
+</table></div>
+<ol>
+<li>Open the pass list with the NORAD ID in <code>satid</code>, your location in <code>lat</code>/<code>lng</code>, and <code>showall=t</code>.
+   For example, for Meteor M2-3 from Viña del Mar:
+   <code>https://www.heavens-above.com/PassSummary.aspx?satid=57166&amp;lat=-33.02&amp;lng=-71.55&amp;alt=0&amp;tz=Chile&amp;showall=t</code>
+   (for M2-4, change it to <code>satid=59051</code>). From the name search, this is the <strong>All Passes</strong> link.</li>
+<li>Check that <strong>Passes to include</strong> is set to <strong>all</strong> (<code>showall=t</code> does that). Otherwise the page
+   only lists passes <em>visible to the naked eye</em>: it leaves out daytime passes and cuts night
+   passes short when the satellite enters the Earth's shadow. For radio, every pass counts, day
+   or night.</li>
+<li>Each row gives the start and end (at 10° elevation) and the time and elevation of the highest
+   point. Pick the ones at <strong>40° or more</strong>.</li>
+</ol>
 <h2 id="step-2-prepare-the-antenna">Step 2: prepare the antenna</h2>
 <ol>
 <li>Use the <strong>large elements</strong> of the dipole, extended to about <strong>53.4 cm each</strong>
@@ -271,7 +309,7 @@ command.</p>
 </table></div>
 <nav class="pasos"><a href="02-fm-sweep.html">← Wideband sweeps with rtl_power</a><a href="04-digital-tv.html">Digital TV →</a></nav>
 </main>
-<footer>Andrés Alvear · Updated 2026-10-24 · No cookies or JavaScript</footer>
+<footer>Andrés Alvear · Updated 2026-10-29 · No cookies or JavaScript</footer>
 </div>
 </body>
 </html>
